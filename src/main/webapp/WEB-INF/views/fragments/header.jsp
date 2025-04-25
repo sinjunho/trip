@@ -88,7 +88,7 @@ nav ul li a {
 		<div class="d-flex justify-content-end">
 
 			<div class="logo">
-				<a href="${root}/main">Enjoy <span>Trip</span></a>
+				<a href="${root}/">Enjoy <span>Trip</span></a>
 			</div>
 			<nav>
 				<ul>
@@ -97,10 +97,10 @@ nav ul li a {
 					%>
 					<!-- 로그인 안됨 -->
 					<li class="nav-signup"><a
-						href="${root}//member?action=regist-member-form" class="mx-3">
+						href="${root}/member/regist" class="mx-3">
 							회원가입</a></li>
 					<li class="nav-login"><a
-						href="${root}//member?action=login-member-form" class="mx-3">
+						href="${root}/member/login" class="mx-3">
 							로그인</a></li>
 					<%
 					} else {
@@ -110,19 +110,19 @@ nav ul li a {
 					Member member = (Member) session.getAttribute("member");
 					if (member.getRole() != null && member.getRole().equals("admin")) {
 					%>
-					<li><a href="${root}/member?action=member-list&currentPage=1"
+					<li><a href="${root}/member/list"
 						class="mx-3">멤버목록</a></li>
 					<%
 					}
 					%>
-					<li><a href="${root}/board?action=list" class="mx-3">게시판</a></li>
+					<li><a href="${root}/board/list" class="mx-3">게시판</a></li>
 					<li><a href="${root}/attraction?action=get-attraction-form">여행지
 							정보</a></li>
 					<li class="nav-user-info"><a
-						href="${root}//member?action=mypage-member-form" class="mx-3">
+						href="${root}/member/mypage" class="mx-3">
 							마이페이지</a></li>
 					<li class="nav-logout"><a
-						href="${root}//member?action=logout-member" class="mx-3"> 로그아웃
+						href="${root}/member/logout" class="mx-3"> 로그아웃
 					</a></li>
 					<%
 					}
@@ -131,15 +131,22 @@ nav ul li a {
 			</nav>
 		</div>
 	</header>
-	<!-- 에러 띄우기 -->
-	<script>
-		const msg = `${alertMsg }` || `${param.alertMsg}`
-		if (msg) {
-			alert(msg)
-		}
-	</script>
+<!-- 알림 및 에러 메시지 처리 -->
+    <script>
+        // alertMsg 처리
+        const alertMsg = `${alertMsg}` || `${param.alertMsg}`;
+        if (alertMsg) {
+            alert(alertMsg);
+        }
+        
+        // error 메시지 처리 
+        const errorMsg = `${error}` || `${param.error}`;
+        if (errorMsg) {
+            alert("오류가 발생했습니다: " + errorMsg);
+        }
+    </script>
 
-
-	<script>
-		<c:remove var="alertMsg"/>
-	</script>
+    <!-- 메시지 세션에서 제거 -->
+    <c:remove var="alertMsg"/>
+    <c:remove var="error"/>
+</div>

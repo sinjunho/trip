@@ -4,10 +4,13 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.List;
 
+import org.apache.ibatis.annotations.Mapper;
+
 import com.ssafy.trip.model.dto.Board;
 import com.ssafy.trip.model.dto.Member;
 import com.ssafy.trip.model.dto.SearchCondition;
 
+@Mapper
 public interface BoardDao {
 
 	int insert(Connection con, Board board) throws SQLException;

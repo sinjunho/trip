@@ -17,11 +17,11 @@ import lombok.RequiredArgsConstructor;
 @Controller
 @RequestMapping("/main")
 @RequiredArgsConstructor
-public class MainController extends HttpServlet implements ControllerHelper {
+public class MainController implements ControllerHelper {
    private final AttractionService aService;
     
     
-    @GetMapping("/index")
+    @GetMapping({"/","/index"})
     private String getMainPage(Model model) {
         try {
             List<Attraction> topAttractions = aService.getRank();

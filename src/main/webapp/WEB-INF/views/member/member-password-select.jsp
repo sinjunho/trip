@@ -34,6 +34,6 @@
 		<div class="alert alert-danger" role="alert">${error }</div>
 	</c:if>
 
-	<%@ include file="/fragments/footer.jsp"%>
+		<%@ include file="/WEB-INF/views/fragments/footer.jsp"%>
 </body>
 </html>
