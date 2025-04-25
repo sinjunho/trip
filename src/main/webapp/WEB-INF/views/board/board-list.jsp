@@ -59,9 +59,9 @@
     </nav>
      <!-- 게시글 등록하기 버튼 -->
     <div class="d-flex justify-content-end">
-        <a href="${root}/board?action=write-form" class="btn btn-success">게시글 등록</a>
+        <a href="${root}/board/write-form" class="btn btn-success">게시글 등록</a>
     </div>
-    <%@ include file="/fragments/footer.jsp"%>
+    <%@ include file="/WEB-INF/views/fragments/footer.jsp"%>
 </body>
 <script>
 const pageLinks = document.querySelectorAll(".pagination a");
