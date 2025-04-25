@@ -6,6 +6,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestAttribute;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+
 import com.google.gson.Gson;
 import com.ssafy.trip.model.dto.Attraction;
 import com.ssafy.trip.model.dto.Page;
@@ -19,50 +29,56 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
+import lombok.RequiredArgsConstructor;
 
-@WebServlet("/attraction")
+@Controller
+@RequestMapping("/attraction")
+@RequiredArgsConstructor
 public class AttractionController extends HttpServlet implements ControllerHelper {
-    private static final long serialVersionUID = 1L;
+    
+	private static final long serialVersionUID = 1L;
     private final AttractionService aService = BasicAttractionService.getService();
     private final String keyVworld = "AFC0A287-7A73-31BB-9AA4-EB2C13CB4B1A";
     private final String keySgisServiceId = "dd717de0a4e148848192"; // 서비스 id
     private final String keySgisSecurity = "498f6a9709d2495d8512"; // 보안 key
 	private final String keyData = "3O3aWqx65Brb2/663JLrcpwvOlDVASEMUmD8iFLTzypz1vNtWSuGCcGgKG7VlPZLFq8ujJR2Wkhg7a5XUpgdmg=="; // data.go.kr 인증키
-    protected void service(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        String action = preProcessing(request, response);
-        switch (action) {
-        case "get-attraction-form" -> getAttraction(request, response);
-        case "getAttractionList" -> getAttractionByAddress(request, response);
-        case "getGugun" -> getGugun(request, response);  // 새 액션 추가
-        case "detailAttraction" -> getAttractionByNo(request, response);
-        case "randomDetailAttraction" -> getRandomDetailAttraction(request, response);
-        default -> response.sendError(HttpServletResponse.SC_NOT_FOUND);
-        }
-    }
+//    protected void service(HttpServletRequest request, HttpServletResponse response)
+//            throws ServletException, IOException {
+//        String action = preProcessing(request, response);
+//        switch (action) {
+//        case "get-attraction-form" -> getAttraction(request, response);
+//        case "getAttractionList" -> getAttractionByAddress(request, response);
+//        case "getGugun" -> getGugun(request, response);  // 새 액션 추가
+//        case "detailAttraction" -> getAttractionByNo(request, response);
+//        case "randomDetailAttraction" -> getRandomDetailAttraction(request, response);
+//        default -> response.sendError(HttpServletResponse.SC_NOT_FOUND);
+//        }
+//    }
     
-    private void getGugun(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
+    @GetMapping("/getGugun")
+    @ResponseBody
+    private ResponseEntity<List<Map<Integer, String>>> getGugun(@RequestAttribute("value") String sidoValue, Model model) {
         try {
-            String sidoValue = request.getParameter("value");
             List<Map<Integer, String>> result = aService.getGugun(sidoValue);
             
-            response.setContentType("application/json");
-            response.setCharacterEncoding("UTF-8");
+//            response.setContentType("application/json");
+//            response.setCharacterEncoding("UTF-8");
             
-            Gson gson = new Gson();
-            String json = gson.toJson(result);
-            response.getWriter().write(json);
+//            Gson gson = new Gson();
+//            String json = gson.toJson(result);
+//            response.getWriter().write(json);
+            return ResponseEntity.ok(result);
             
         } catch (Exception e) {
             e.printStackTrace();
-            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            response.getWriter().write("{\"error\": \"" + e.getMessage() + "\"}");
+//            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+//            response.getWriter().write("{\"error\": \"" + e.getMessage() + "\"}");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
     
-    private void getAttraction(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
+    @GetMapping("/get-attraction-form")
+    private String getAttraction(Model model) {
         try {
             List<Map<Integer, String>> contentList = aService.getContent();
             List<Map<Integer, String>> sidoList = aService.getSido();
@@ -70,31 +86,40 @@ public class AttractionController extends HttpServlet implements ControllerHelpe
             // 랜덤 여행지 추천 (6개)
             List<Attraction> randomAttractions = aService.getRandomAttractions(6);
             
-            request.getSession().setAttribute("contentList", contentList);
-            request.getSession().setAttribute("sidoList", sidoList);
-            request.setAttribute("randomAttractions", randomAttractions);
+            model.addAttribute("contentList", contentList);
+            model.addAttribute("sidoList", sidoList);
+            model.addAttribute("randomAttractions", randomAttractions);
             
-            forward(request, response, "/attraction/attraction-form.jsp");
+            return "attraction/attraction-form";
+            
         } catch (Exception e) {
             e.printStackTrace();
-            request.setAttribute("error", e.getMessage());
+            model.addAttribute("error", e.getMessage());
+            return "error/404";
         }
     }
     
-    private void getAttractionByAddress(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
+    @GetMapping("/getAttractionList")
+    private String getAttractionByAddress(@RequestParam(value = "contentTypeName", required = false) String contentTypeName,
+    		@RequestParam(value = "sido", required = false) String areaCode,
+            @RequestParam(value = "gugun", required = false) String siGunGuCode,
+            @RequestParam(value = "currentPage", defaultValue = "1") int currentPage,
+            Model model,
+            HttpSession session ) {
+    	
         try {
-            String contentTypeName = request.getParameter("contentTypeName");
-            String areaCode = request.getParameter("sido");
-            String siGunGuCode = request.getParameter("gugun");
+//            String contentTypeName = request.getParameter("contentTypeName");
+//            String areaCode = request.getParameter("sido");
+//            String siGunGuCode = request.getParameter("gugun");
+        	
             
             // 페이징 파라미터 처리
-            String pageParam = request.getParameter("currentPage");
-            int currentPage = 1; // 기본값 설정
+//            String pageParam = request.getParameter("currentPage");
+//            int currentPage = 1; // 기본값 설정
             
-            if (pageParam != null && !pageParam.isEmpty()) {
-                currentPage = Integer.parseInt(pageParam);
-            }
+//            if (pageParam != null && !pageParam.isEmpty()) {
+//                currentPage = Integer.parseInt(pageParam);
+//            }
             
             // 검색 조건 객체 생성
             SearchCondition condition = new SearchCondition();
@@ -111,25 +136,27 @@ public class AttractionController extends HttpServlet implements ControllerHelpe
             // Page 객체 생성
             Page<Attraction> page = new Page<>(condition, totalItems, pagedList);
             
-            request.getSession().setAttribute("attrList", pagedList);  // 페이징된 리스트
-            request.setAttribute("page", page);  // 페이지 객체 추가
-            request.setAttribute("key_vworld", keyVworld);
-            request.setAttribute("key_sgis_service_id", keySgisServiceId);
-            request.setAttribute("key_sgis_security", keySgisSecurity);
-            request.setAttribute("key_data", keyData);
+            session.setAttribute("attrList", pagedList);  // 페이징된 리스트
+            model.addAttribute("page", page);  // 페이지 객체 추가
+            model.addAttribute("key_vworld", keyVworld);
+            model.addAttribute("key_sgis_service_id", keySgisServiceId);
+            model.addAttribute("key_sgis_security", keySgisSecurity);
+            model.addAttribute("key_data", keyData);
             
-            forward(request, response, "/attraction/map-list.jsp");
+            return "attraction/map-list";
             
         } catch (Exception e) {
             e.printStackTrace();
-            request.setAttribute("error", e.getMessage());
+            return "error/404";
+            //request.setAttribute("error", e.getMessage());
+            
         }
     }
     
-    private void getRandomDetailAttraction(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    @GetMapping("/randomDetailAttraction")
+    private String getRandomDetailAttraction(@RequestParam int no, Model model, HttpSession session) {
     	try {
     		System.out.println("randomDetailAttraction");
-    		int no = Integer.parseInt(request.getParameter("no"));
     		Attraction detailAttraction = aService.getAttractionByNo(no);
 			String contentTypeName = detailAttraction.getContentTypeName();
             String areaCode = detailAttraction.getSido();
@@ -141,23 +168,22 @@ public class AttractionController extends HttpServlet implements ControllerHelpe
 //				System.out.println(nearAttractionList.get(i).toString());
 //			}
 			
-			request.getSession().setAttribute("attrList", nearAttractionList);
+			session.setAttribute("attrList", nearAttractionList);
 			
-			getAttractionByNo(request, response);
+			//getAttractionByNo(request, response);
+			return "redirect:/attraction/detailAttraction";
 			
     	} catch(Exception e) {
     		e.printStackTrace();
-    		request.setAttribute("error", e.getMessage());
+    		return "error/404";
     	}
     }
     
-   private void getAttractionByNo(HttpServletRequest request, HttpServletResponse response)
-			throws ServletException, IOException {
+    @GetMapping("/detailAttraction")
+    private String getAttractionByNo(@RequestParam int no, HttpSession session, Model model) {
 		try {
-			int no = Integer.parseInt(request.getParameter("no"));
 			System.out.println("controller - detail : "+no);
 			
-			HttpSession session = request.getSession();
 			Set<Integer> readArticles = (Set<Integer>) session.getAttribute("readArticles");
             
             if (readArticles == null) {
@@ -173,21 +199,21 @@ public class AttractionController extends HttpServlet implements ControllerHelpe
 			
 			Attraction detailAttraction = aService.getAttractionByNo(no);
 			System.out.println(detailAttraction.toString());
-			request.getSession().setAttribute("detailAttraction", detailAttraction); 
+			session.setAttribute("detailAttraction", detailAttraction); 
 			
 			// 주변 관광지 거리순으로 보여주기
-			List<Attraction> nearAttractionList = (List<Attraction>) request.getSession().getAttribute("attrList");
+			List<Attraction> nearAttractionList = (List<Attraction>) session.getAttribute("attrList");
 			if(nearAttractionList != null || nearAttractionList.size()!=0) {
 				Attraction[] nearAttractionArr = aService.sortAttractionListByDistance(nearAttractionList, detailAttraction);
-				request.setAttribute("nearAttraction", nearAttractionArr);
+				model.addAttribute("nearAttraction", nearAttractionArr);
 			}
 			//
 			
-			forward(request, response, "/attraction/attraction-detail-form.jsp");
+			return "attraction/attraction-detail-form";
 			
 		} catch (Exception e) {
 			e.printStackTrace();
-			request.setAttribute("error", e.getMessage());
+			return "error/404";
 		}
 	}
 }
