@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  
+ <!-- TODO : 변경 요망 -->
+<mapper namespace="com.ssafy.trip.model.dao.MemberDao">
+   <!--
+ <insert id="insert" parameterType="???" useGeneratedKeys="true" keyProperty="id??????">
+ 
+ </insert>
+   
+    <update id="update">
+        update member set
+        name=#{name}, password=#{password}, role = #{role} 
+        where email=#{email}
+    </update>
+
+    <delete id="delete">
+        delete from member 
+        where mno=#{mno}
+    </delete>
+
+    <update id="updateProfile">
+        update member 
+        set profile=#{profile} 
+        where email=#{email}
+    </update>
+
+ 
+    <select id="select" resultType="Member">
+        select * from member where email=#{email}
+    </select>
+
+
+
+   -->
+</mapper>
