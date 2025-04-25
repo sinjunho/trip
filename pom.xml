@@ -85,6 +85,13 @@
             <groupId>org.glassfish.web</groupId>
             <artifactId>jakarta.servlet.jsp.jstl</artifactId>
         </dependency>
+        
+        <!-- gson 처리 -->
+        <dependency>
+		    <groupId>com.google.code.gson</groupId>
+		    <artifactId>gson</artifactId>
+		  
+		</dependency>
 	</dependencies>
 
 	<build>
