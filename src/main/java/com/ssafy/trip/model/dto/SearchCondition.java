@@ -33,7 +33,7 @@ public class SearchCondition {
      * @return
      */
     public boolean hasKeyword() {
-        return key != null && !key.isBlank() && word != null && !word.isBlank();
+        return key != null && word != null && !word.isEmpty();
     }
 
     public String getKey() {

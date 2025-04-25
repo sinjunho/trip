@@ -27,9 +27,7 @@
                     <p>Enjoy Trip 서비스를 이용하기 위한 계정을 만들어보세요</p>
                 </div>
                 
-                <form action="${root}/member" method="post">
-                    <input type="hidden" name="action" value="regist-member" />
-                    
+                <form action="${root}/member/regist" method="post">                   
                     <div class="form-row">
                         <div class="form-col">
                             <div class="form-group">
@@ -101,7 +99,6 @@
             </div>
         </div>
     </div>
-
-    <%@ include file="/fragments/footer.jsp"%>
+	<%@ include file="/WEB-INF/views/fragments/footer.jsp"%>
 </body>
 </html>

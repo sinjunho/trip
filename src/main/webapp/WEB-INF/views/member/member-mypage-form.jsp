@@ -53,8 +53,8 @@
             
             <div class="form-section">
                 <h2>회원 정보 수정</h2>
-                <form action="${root}/member" method="post">
-                    <input type="hidden" name="action" value="modify-member" />
+                <form action="${root}/member/modify" method="post">
+                 
     
                     <div class="form-row">
                         <div class="form-col">
@@ -109,8 +109,8 @@
                     <strong>경고!</strong> 회원 탈퇴 시 모든 정보가 삭제되며 복구할 수 없습니다.
                 </div>
                 
-                <form action="${root}/member" method="post">
-                    <input type="hidden" name="action" value="delete-member" />
+                <form action="${root}/member/delete" method="post">
+                 
     
                     <div class="form-row">
                         <div class="form-col">
@@ -137,6 +137,6 @@
         </div>
     </div>
 
-	<%@ include file="/fragments/footer.jsp"%>
+	<%@ include file="/WEB-INF/views/fragments/footer.jsp"%>
 </body>
 </html>

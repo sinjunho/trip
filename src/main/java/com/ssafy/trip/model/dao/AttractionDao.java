@@ -5,9 +5,12 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.ibatis.annotations.Mapper;
+
 import com.ssafy.trip.model.dto.Attraction;
 import com.ssafy.trip.model.dto.Member;
 
+@Mapper
 public interface AttractionDao {
 	List<Attraction> getAttractionByAddress(Connection con, String contentTypeName, String areaCode, String siGunGuCode, int offset, int limit) throws SQLException;
 	

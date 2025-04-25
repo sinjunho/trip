@@ -28,8 +28,7 @@
                     <p>계정에 로그인하여 Enjoy Trip을 시작하세요</p>
                 </div>
                 
-                <form action="${root}/member" method="post">
-                    <input type="hidden" name="action" value="login-member" />
+                <form action="${root}/member/login" method="post">
                     
                     <div class="form-input-group">
                         <i class="fas fa-user"></i>
@@ -69,12 +68,12 @@
                 </c:if>
                 
                 <div class="auth-footer">
-                    <p>계정이 없으신가요? <a href="${root}/member?action=regist-member-form">회원가입</a></p>
+                    <p>계정이 없으신가요? <a href="${root}/member/regist">회원가입</a></p>
                 </div>
             </div>
         </div>
     </div>
 
-	<%@ include file="/fragments/footer.jsp"%>
+	<%@ include file="/WEB-INF/views/fragments/footer.jsp"%>
 </body>
 </html>

@@ -1,30 +1,34 @@
 package com.ssafy.trip.model.dao;
 
-import java.sql.Connection;
-import java.sql.SQLException;
 import java.util.List;
+
+import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 
 import com.ssafy.trip.model.dto.Member;
 import com.ssafy.trip.model.dto.SearchCondition;
 
+@Mapper
 public interface MemberDao {
-	int insert(Connection con, Member member) throws SQLException;
+    int insert(Member member);
 
-	Member login(Connection con, String id, String password) throws SQLException;
+    Member login(@Param("id") String id, @Param("password") String password);
 
-	void modify(Connection con, String id, String name, String password, String address, String tel)
-			throws SQLException;
+    void modify(@Param("id") String id, @Param("name") String name, 
+                @Param("password") String password, @Param("address") String address, 
+                @Param("tel") String tel) ;
 
-	int delete(Connection con, String id, String password) throws SQLException;
+    int delete(@Param("id") String id, @Param("password") String password);
 
-	String find(Connection con, String id, String tel) throws SQLException;
+    String find(@Param("id") String id, @Param("tel") String tel) ;
 
-	List<Member> search(Connection con) throws SQLException;
+    // 모든 맴버
+    List<Member> searchAll() ;
 
-	public List<Member> search(Connection con, SearchCondition condition) throws SQLException;
+    // 검색 맴버
+    List<Member> search(SearchCondition condition) ;
 
-	public int getTotalCount(Connection con, SearchCondition condition) throws SQLException;
+    int getTotalCount(SearchCondition condition);
 
-	Member selectDetail(Connection con, String id) throws SQLException;
-
+    Member selectDetail(@Param("id") String id) ;
 }
