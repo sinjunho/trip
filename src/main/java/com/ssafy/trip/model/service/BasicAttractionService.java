@@ -6,18 +6,22 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.stereotype.Service;
+
 import com.ssafy.trip.model.dao.AttractionDao;
 import com.ssafy.trip.model.dao.BasicAttractionDao;
 import com.ssafy.trip.model.dto.Attraction;
 import com.ssafy.trip.util.DBUtil;
 
+import lombok.RequiredArgsConstructor;
+
+@Service
+@RequiredArgsConstructor
 public class BasicAttractionService implements AttractionService {
 	private AttractionDao dao = BasicAttractionDao.getDao();
 	private DBUtil util = DBUtil.getUtil();
 	private static BasicAttractionService service = new BasicAttractionService();
 
-	private BasicAttractionService() {
-	}
 
 	public static BasicAttractionService getService() {
 		return service;
