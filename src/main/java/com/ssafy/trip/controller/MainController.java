@@ -22,14 +22,14 @@ public class MainController implements ControllerHelper {
     
     
     @GetMapping({"/","/index"})
-    private String getMainPage(Model model) {
+    private String getMainPage(Model model)  {
         try {
             List<Attraction> topAttractions = aService.getRank();
             
             model.addAttribute("topAttractions", topAttractions);
 
             return "index";
-        } catch (SQLException e) {
+        } catch (Exception e) {
             e.printStackTrace();
             model.addAttribute("error", "인기 여행지를 불러오는 중 오류가 발생했습니다.");
             return "index";

@@ -144,6 +144,7 @@ nav ul li a {
         if (errorMsg) {
             alert("오류가 발생했습니다: " + errorMsg);
         }
+        
     </script>
 
     <!-- 메시지 세션에서 제거 -->
