@@ -116,7 +116,7 @@ nav ul li a {
 					}
 					%>
 					<li><a href="${root}/board/list" class="mx-3">게시판</a></li>
-					<li><a href="${root}/attraction?action=get-attraction-form">여행지
+					<li><a href="${root}/attraction/get-attraction-form">여행지
 							정보</a></li>
 					<li class="nav-user-info"><a
 						href="${root}/member/mypage" class="mx-3">

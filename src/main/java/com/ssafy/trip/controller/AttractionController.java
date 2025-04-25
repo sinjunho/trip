@@ -57,7 +57,7 @@ public class AttractionController extends HttpServlet implements ControllerHelpe
     
     @GetMapping("/getGugun")
     @ResponseBody
-    private ResponseEntity<List<Map<Integer, String>>> getGugun(@RequestAttribute("value") String sidoValue, Model model) {
+    private ResponseEntity<List<Map<Integer, String>>> getGugun(@RequestParam("sido") String sidoValue, Model model) {
         try {
             List<Map<Integer, String>> result = aService.getGugun(sidoValue);
             

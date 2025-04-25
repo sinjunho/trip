@@ -82,7 +82,7 @@
         <div class="alert alert-danger" role="alert">${error }</div>
     </c:if>
 	
-    <%@ include file="/fragments/footer.jsp"%>
+    <%@ include file="/WEB-INF/views/fragments/footer.jsp"%>
     <script>
 	document.getElementById('sido').addEventListener('change', function() {
     const sidoValue = this.value;
@@ -93,7 +93,7 @@
     
     if (sidoValue) {
         // AJAX 요청
-        fetch('${root}/attraction?action=getGugun&value=' + sidoValue)
+        fetch('${root}/attraction/getGugun?sido=' + sidoValue)
             .then(response => response.json())
             .then(data => {
                 // 받은 데이터로 구/군 옵션 추가

@@ -5,6 +5,14 @@ import java.sql.SQLException;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+
 import com.ssafy.trip.model.dto.Board;
 import com.ssafy.trip.model.dto.Member;
 import com.ssafy.trip.model.dto.Page;
@@ -19,85 +27,84 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 
-@WebServlet("/board")
+@Controller
+@RequestMapping("/board")
 public class BoardController extends HttpServlet {
     private static final long serialVersionUID = 1L;
     private final BoardService bService = BasicBoardService.getService();
 
-    protected void service(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        String action = request.getParameter("action");
-        switch (action) {
-            case "write-form" -> forward(request, response, "/board/board-write-form.jsp");
-            case "write" -> writeBoard(request, response);
-            case "list" -> searchBy(request, response);
-            case "detail" -> boardDetail(request, response);
-            case "modify-form" -> prepareModifyForm(request, response);
-            case "modify" -> modifyBoard(request, response);
-            case "delete" -> deleteBoard(request, response);
-            default -> response.sendError(HttpServletResponse.SC_NOT_FOUND);
-        }
-    }
+//    protected void service(HttpServletRequest request, HttpServletResponse response)
+//            throws ServletException, IOException {
+//        String action = request.getParameter("action");
+//        switch (action) {
+//            case "write-form" -> forward(request, response, "/board/board-write-form.jsp");
+//            case "write" -> writeBoard(request, response);
+//            case "list" -> searchBy(request, response);
+//            case "detail" -> boardDetail(request, response);
+//            case "modify-form" -> prepareModifyForm(request, response);
+//            case "modify" -> modifyBoard(request, response);
+//            case "delete" -> deleteBoard(request, response);
+//            default -> response.sendError(HttpServletResponse.SC_NOT_FOUND);
+//        }
+//    }
 
-    private void prepareModifyForm(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
+    @GetMapping("/modify-form")
+    private String prepareModifyForm(@RequestParam int bno, Model model) {
         try {
-            int bno = Integer.parseInt(request.getParameter("bno"));
             Board board = bService.selectDetail(bno);
-            request.setAttribute("board", board);
-            forward(request, response, "/board/board-modify-form.jsp");
+            model.addAttribute("board", board);
+            return "board/board-modify-form";
         } catch (SQLException e) {
             e.printStackTrace();
-            request.setAttribute("error", e.getMessage());
-            forward(request, response, "/board/board-list.jsp");
+            model.addAttribute("error", e.getMessage());
+            return "board/board-list";
         }
     }
 
-    
-    private void writeBoard(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
+    @PostMapping("/write")
+    private String writeBoard(@RequestParam String title, @RequestParam String content, Model model, HttpSession session) {
         try {
-            String title = request.getParameter("title");
-            String content = request.getParameter("content");
-            Member member = (Member) request.getSession().getAttribute("member");
+            
+            Member member = (Member) session.getAttribute("member");
+            session.setAttribute("member", member);
             String writer = member != null ? member.getName() : "알 수 없음";
             System.out.println(writer);
             bService.writeBoard(new Board(title, content, writer));
-            redirect(request, response, "/board?action=list");
+            return "redirect:/board/list";
         } catch (SQLException e) {
             e.printStackTrace();
-            request.setAttribute("error", e.getMessage());
-            forward(request, response, "/board/board-write-form.jsp");
+            model.addAttribute("error", e.getMessage());
+            return "board/board-write-form";
         }
     }
 
-    private void boardList(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        String key = request.getParameter("key");
-        String word = request.getParameter("word");
-        String currentPageStr = request.getParameter("currentPage");
+    @GetMapping("/list-page")
+    private String boardList(@RequestParam String key, @RequestParam String word, 
+    		@RequestParam(defaultValue = "1") int currentPage, 
+    		HttpSession session, Model model) {
+//        String key = request.getParameter("key");
+//        String word = request.getParameter("word");
+//        String currentPageStr = request.getParameter("currentPage");
         
-        int currentPage = 1;
-        if(currentPageStr!=null) {
-        	currentPage=Integer.parseInt(currentPageStr);
-        }
+//        int currentPage = 1;
+//        if(currentPageStr!=null) {
+//        	currentPage=Integer.parseInt(currentPageStr);
+//        }
         try {
             Page<Board> page = bService.search(new SearchCondition(key, word, currentPage));
-            request.getSession().setAttribute("page", page);
-            forward(request, response, "/board/board-list.jsp");
+            session.setAttribute("page", page);
+            return "board/board-list";
         } catch (SQLException e) {
             e.printStackTrace();
-            request.setAttribute("error", e.getMessage());
-            forward(request, response, "/board/board-list.jsp");
+            model.addAttribute("error", e.getMessage());
+            return "board/board-list";
         }
     }
 
-    private void boardDetail(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
+    @GetMapping("/detail")
+    private String boardDetail(@RequestParam int bno, HttpSession session, Model model) {
         try {
-            int bno = Integer.parseInt(request.getParameter("bno"));
             
-            HttpSession session = request.getSession();
             Set<Integer> readArticles = (Set<Integer>) session.getAttribute("readArticles");
             
             if (readArticles == null) {
@@ -111,101 +118,93 @@ public class BoardController extends HttpServlet {
             }
             
             Board board = bService.selectDetail(bno);
-            request.setAttribute("board", board);
-            forward(request, response, "/board/board-detail.jsp");
+            model.addAttribute("board", board);
+            return "/board/board-detail";
         } catch (SQLException e) {
             e.printStackTrace();
-            request.setAttribute("error", e.getMessage());
-            forward(request, response, "/board/board-list.jsp");
+            model.addAttribute("error", e.getMessage());
+            return "/board/board-list";
         }
     }
 
-    private void modifyBoard(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
+    @PostMapping("/modify")
+    private String modifyBoard(@RequestParam int bno, @RequestParam String title, 
+    		@RequestParam String content, Model model) {
         try {
-            int bno = Integer.parseInt(request.getParameter("bno"));
-            String title = request.getParameter("title");
-            String content = request.getParameter("content");
-
             bService.modifyBoard(new Board(bno, title, content, null, null, 0));
-            redirect(request, response, "/board?action=list");
+            return "redirect:/board/list";
         } catch (SQLException e) {
             e.printStackTrace();
-            request.setAttribute("error", e.getMessage());
-            forward(request, response, "/board/board-modify-form.jsp");
+            model.addAttribute("error", e.getMessage());
+            return "board/board-modify-form";
         }
     }
 
-    private void deleteBoard(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
+    @PostMapping("/delete")
+    private String deleteBoard(@RequestParam int bno, Model model) {
         try {
-            int bno = Integer.parseInt(request.getParameter("bno"));
             bService.deleteBoard(bno);
-            redirect(request, response, "/board?action=list");
+            return "redirect:/board/list";
         } catch (SQLException e) {
             e.printStackTrace();
-            request.setAttribute("error", e.getMessage());
-            forward(request, response, "/board/board-list.jsp");
+            model.addAttribute("error", e.getMessage());
+            return "board/board-list";
         }
     }
-    private void searchBy(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-    	 String key = request.getParameter("key");
+    
+    @GetMapping("/list")
+    private String searchBy(@RequestParam String key) {
          
-    	 if(key == null) boardList(request, response); 
-    	 
-    	 else if(key.equals("1")) searchByTitle(request, response); 
-         else if(key.equals("2")) searchByWriter(request, response); 
-         else boardList(request, response);
+//    	 if(key == null) boardList(request, response); 
+//    	 else if(key.equals("1")) searchByTitle(request, response); 
+//         else if(key.equals("2")) searchByWriter(request, response); 
+//         else boardList(request, response);
          
+    	 if(key == null)  return "board/list-page"; 
+    	 else if(key.equals("1")) return "board/list-by-title"; 
+    	 else if(key.equals("2")) return "board/list-by-writer"; 
+    	 else return "board/list-page";
     }
-    private void searchByTitle(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        String key = request.getParameter("key");
-        String word = request.getParameter("word");
-        String currentPageStr = request.getParameter("currentPage");
-        int currentPage = 1;
-        if(currentPageStr!=null) {
-        	currentPage=Integer.parseInt(currentPageStr);
-        }
+    
+    @GetMapping("/list-by-title")
+    private String searchByTitle(@RequestParam String key, @RequestParam String word, 
+    		@RequestParam(defaultValue = "1") int currentPage, HttpSession session, Model model ) {
+//        String key = request.getParameter("key");
+//        String word = request.getParameter("word");
+//        String currentPageStr = request.getParameter("currentPage");
+//        int currentPage = 1;
+//        if(currentPageStr!=null) {
+//        	currentPage=Integer.parseInt(currentPageStr);
+//        }
         try {
             Page<Board> page = bService.searchByTitle(new SearchCondition(key, word, currentPage));
-            request.getSession().setAttribute("page", page);
-            forward(request, response, "/board/board-list.jsp");
+            session.setAttribute("page", page);
+            return "board/board-list";
         } catch (SQLException e) {
             e.printStackTrace();
-            request.setAttribute("error", e.getMessage());
-            forward(request, response, "/board/board-list.jsp");
+            model.addAttribute("error", e.getMessage());
+            return "board/board-list";
         }
     }
     
-    
-    private void searchByWriter(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        String key = request.getParameter("key");
-        String word = request.getParameter("word");
-        String currentPageStr = request.getParameter("currentPage");
-        int currentPage = 1;
-        if(currentPageStr!=null) {
-        	currentPage=Integer.parseInt(currentPageStr);
-        }
+    @GetMapping("/list-by-writer")
+    private String searchByWriter(@RequestParam String key, @RequestParam String word, 
+    		@RequestParam(defaultValue = "1") int currentPage, HttpSession session, Model model) {
+//        String key = request.getParameter("key");
+//        String word = request.getParameter("word");
+//        String currentPageStr = request.getParameter("currentPage");
+//        int currentPage = 1;
+//        if(currentPageStr!=null) {
+//        	currentPage=Integer.parseInt(currentPageStr);
+//        }
         try {
             Page<Board> page = bService.searchByWriter(new SearchCondition(key, word, currentPage));
-            request.getSession().setAttribute("page", page);
-            forward(request, response, "/board/board-list.jsp");
+            session.setAttribute("page", page);
+            return "board/board-list";
         } catch (SQLException e) {
             e.printStackTrace();
-            request.setAttribute("error", e.getMessage());
-            forward(request, response, "/board/board-list.jsp");
+            model.addAttribute("error", e.getMessage());
+            return "board/board-list";
         }
-    }
-    
-    private void forward(HttpServletRequest request, HttpServletResponse response, String path)
-            throws ServletException, IOException {
-        request.getRequestDispatcher(path).forward(request, response);
-    }
-
-    private void redirect(HttpServletRequest request, HttpServletResponse response, String path)
-            throws IOException {
-        response.sendRedirect(request.getContextPath() + path);
     }
 }
