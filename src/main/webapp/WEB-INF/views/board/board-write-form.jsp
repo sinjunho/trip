@@ -9,8 +9,7 @@
     <%@ include file="/WEB-INF/views/fragments/header.jsp"%>
 
     <h1>게시글 작성</h1>
-    <form action="${root}/board" method="post" class="m-3">
-        <input type="hidden" name="action" value="write" />
+    <form action="${root}/board/write" method="post" class="m-3">
 
         <!-- 제목 입력 -->
         <div class="mb-3 row">
@@ -37,6 +36,6 @@
         <div class="alert alert-danger" role="alert">${error }</div>
     </c:if>
 
-    <%@ include file="/fragments/footer.jsp"%>
+    <%@ include file="/WEB-INF/views/fragments/footer.jsp"%>
 </body>
 </html>
