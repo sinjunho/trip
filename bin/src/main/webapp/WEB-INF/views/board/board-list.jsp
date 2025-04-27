@@ -8,8 +8,8 @@
 <body>
     <%@ include file="/WEB-INF/views/fragments/header.jsp"%>
     <h1>게시판 목록</h1>
-    <form class="row mb-3" action="${root }/board/list" method="get" id="search-form">
-        <!--  input type="hidden" name="action" value="list" /-->
+    <form class="row mb-3" action="${root }/board" method="get" id="search-form">
+        <input type="hidden" name="action" value="list" />
         <input type="hidden" id="currentPage" name="currentPage" value="1" />
         <div class="d-flex justify-content-end">
             <select class="form-select w-25" name="key">
@@ -36,7 +36,7 @@
             <c:forEach items="${page.list}" var="item">
                 <tr>
                     <td>${item.bno}</td>
-                    <td><a href="${root }/board/detail?bno=${item.bno}">${item.title}</a></td>
+                    <td><a href="${root }/board?action=detail&bno=${item.bno}">${item.title}</a></td>
                     <td>${item.writer}</td>
                     <td>${item.regDate}</td>
                     <td>${item.viewCnt}</td>

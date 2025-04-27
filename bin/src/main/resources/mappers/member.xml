@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  
+<mapper namespace="com.ssafy.trip.model.dao.MemberDao">
+    <!-- 회원 등록 -->
+    <insert id="insert" parameterType="com.ssafy.trip.model.dto.Member">
+        insert into member (name, id, password, address, tel) 
+        values(#{name}, #{id}, #{password}, #{address}, #{tel})
+    </insert>
+   
+    <!-- 회원 정보 수정 -->
+    <update id="modify">
+        update member 
+        set name=#{name}, password=#{password}, address=#{address}, tel=#{tel} 
+        where id=#{id}
+    </update>
+
+    <!-- 회원 삭제 -->
+    <delete id="delete">
+        delete from member 
+        where id=#{id} and password=#{password}
+    </delete>
+
+    <!-- 로그인 -->
+    <select id="login" resultType="com.ssafy.trip.model.dto.Member">
+        select * 
+        from member 
+        where id=#{id} and password=#{password}
+    </select>
+    
+    <!-- 비밀번호 찾기 -->
+    <select id="find" resultType="String">
+        select password 
+        from member 
+        where id=#{id} and tel=#{tel}
+    </select>
+    
+    <!-- 전체 회원 조회 -->
+    <select id="searchAll" resultType="com.ssafy.trip.model.dto.Member">
+        select * 
+        from member 
+        order by mno desc
+    </select>
+    
+    <!-- 검색 조건에 따른 회원 조회 -->
+<select id="search" parameterType="com.ssafy.trip.model.dto.SearchCondition" resultType="com.ssafy.trip.model.dto.Member">
+    select * 
+    from member
+    <where>
+        <if test="key != null and word != null and word != ''">
+            ${key} like CONCAT('%', #{word}, '%')
+        </if>
+    </where>
+    order by mno desc
+    limit #{offset}, #{itemsPerPage}
+</select>
+
+<!-- 검색 조건에 따른 전체 회원수 조회 -->
+<select id="getTotalCount" parameterType="com.ssafy.trip.model.dto.SearchCondition" resultType="int">
+    select count(*) 
+    from member
+    <where>
+        <if test="key != null and word != null and word != ''">
+            ${key} like CONCAT('%', #{word}, '%')
+        </if>
+    </where>
+</select>
+    
+    <!-- 상세 회원 정보 조회 -->
+    <select id="selectDetail" resultType="com.ssafy.trip.model.dto.Member">
+        select *
+        from member 
+        where id=#{id}
+    </select>
+</mapper>
