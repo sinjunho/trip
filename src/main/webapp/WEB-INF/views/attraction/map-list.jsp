@@ -82,14 +82,13 @@ const key_data = `${key_data}`;
 				</c:forEach>
 			</tbody>
 		</table>
-		<!-- 현재 페이지를 추적하기 위한 폼 추가 -->
-		<form id="search-form" method="GET" action="${root}/attraction">
-			<input type="hidden" name="action" value="getAttractionList">
+		<!-- 현재 페이지를 추적하기 위한 폼 수정 -->
+		<form id="search-form" method="GET" action="${root}/attraction/getAttractionList">
 			<input type="hidden" name="contentTypeName"
-				value="${param.contentTypeName}"> <input type="hidden"
-				name="sido" value="${param.sido}"> <input type="hidden"
-				name="gugun" value="${param.gugun}"> <input type="hidden"
-				id="currentPage" name="currentPage"
+				value="${param.contentTypeName}"> 
+			<input type="hidden" name="sido" value="${param.sido}"> 
+			<input type="hidden" name="gugun" value="${param.gugun}"> 
+			<input type="hidden" id="currentPage" name="currentPage"
 				value="${page.condition.currentPage}">
 		</form>
 		<nav class="d-flex justify-content-center">
@@ -148,7 +147,8 @@ const showAddress = (addrInfos)=>{
         	temp +=`
                 <tr>
                   <td><a href =`;
-            temp += `${root }/attraction?action=detailAttraction&no=\${item.no }`
+            // 이 경로를 컨트롤러 매핑과 일치시킴
+            temp += `${root}/attraction/detailAttraction?no=\${item.no}`
             
             temp += `>\${item.title}</a></td>
                   <td>\${item.addr}</td>
