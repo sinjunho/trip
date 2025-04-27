@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.ssafy.trip.model.dto.Board;
 import com.ssafy.trip.model.dto.Member;
@@ -68,19 +69,18 @@ public class BoardController extends HttpServlet {
 	}
 
 	@PostMapping("/write")
-	private String writeBoard(@RequestParam String title,@RequestParam Member member, @RequestParam String content, Model model,
-			HttpSession session) {
+	private String writeBoard(@RequestParam String title, 
+			@RequestParam String content, Model model,
+			HttpSession session, RedirectAttributes redirectAttributes) {
 		try {
-			//Member member = (Member) session.getAttribute("member");
-			model.addAttribute(member);
-			session.setAttribute("member", member);
+			Member member = (Member) session.getAttribute("member");
 			String writer = member != null ? member.getName() : "알 수 없음";
-			System.out.println(writer);
+			//System.out.println(writer);
 			bService.writeBoard(new Board(title, content, writer));
 			return "redirect:/board/list";
 		} catch (SQLException e) {
 			e.printStackTrace();
-			model.addAttribute("error", e.getMessage());
+			redirectAttributes.addFlashAttribute("error", e.getMessage());
 			return "board/board-write-form";
 		}
 	}
@@ -125,11 +125,11 @@ public class BoardController extends HttpServlet {
 
 			Board board = bService.selectDetail(bno);
 			model.addAttribute("board", board);
-			return "/board/board-detail";
+			return "board/board-detail";
 		} catch (SQLException e) {
 			e.printStackTrace();
 			model.addAttribute("error", e.getMessage());
-			return "/board/board-list";
+			return "board/board-list";
 		}
 	}
 
