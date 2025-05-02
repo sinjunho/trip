@@ -15,7 +15,6 @@ import jakarta.servlet.http.HttpServlet;
 import lombok.RequiredArgsConstructor;
 
 @Controller
-@RequestMapping("/")
 @RequiredArgsConstructor
 public class MainController implements ControllerHelper {
    private final AttractionService aService;
