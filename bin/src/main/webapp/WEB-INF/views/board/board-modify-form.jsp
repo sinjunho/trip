@@ -38,6 +38,6 @@
         </div>
     </form>
 </div>
-<%@ include file="/fragments/footer.jsp"%>
+<%@ include file="/WEB-INF/views/fragments/footer.jsp"%>
 </body>
 </html>
