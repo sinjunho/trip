@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  
+<mapper namespace="com.ssafy.trip.model.dao.BoardDao">
+    <!-- 게시판 등록 -->
+    <insert id="insert" parameterType="com.ssafy.trip.model.dto.Board">
+        insert into board (title, content, writer)
+        values(#{title}, #{content}, #{writer})
+    </insert>
+    
+    <!-- 게시판 검색 -->
+    <select id="search" parameterType="com.ssafy.trip.model.dto.SearchCondition" resultType="com.ssafy.trip.model.dto.Board">
+        select * 
+        from board 
+        order by bno DESC LIMIT #{offset}, #{itemsPerPage}
+    </select>
+    
+    <!-- 게시판 상세 조회 -->
+    <select id="selectDetail" resultType="com.ssafy.trip.model.dto.Member">
+        select *
+        from board 
+        where bno=#{bno}
+    </select>
+   
+    <!-- 게시판 수정 -->
+    <update id="update">
+        update board 
+        set title=#{title}, content=#{content}
+        where bno=#{bno}
+    </update>
+
+    <!-- 게시판 삭제 -->
+    <delete id="delete">
+        delete from board 
+        where bno=#{bno}
+    </delete>
+
+	<!-- 검색 조건에 따른 게시글 수 조회 -->
+	<select id="getTotalCount" parameterType="com.ssafy.trip.model.dto.SearchCondition" resultType="int">
+	    select count(*) 
+	    from member
+	    <where>
+	        <if test="key != null and word != null and word != ''">
+	            ${key} like CONCAT('%', #{word}, '%')
+	        </if>
+	    </where>
+	</select>
+	
+	<!-- 조회 수 업데이트 -->
+	<update id="updateViewCount">
+        update board 
+        set view_cnt = view_cnt + 1
+        where bno=#{bno}
+    </update>
+    
+    <!-- 게시글 제목으로 검색 -->
+	<select id="searchByTitle" parameterType="com.ssafy.trip.model.dto.SearchCondition" resultType="com.ssafy.trip.model.dto.Board">
+        select * 
+        from board
+        <where>
+	        <if test="key != null and word != null and word != ''">
+	            title like CONCAT('%', #{word}, '%')
+	        </if>
+	    </where>
+    </select>
+  
+    <!-- 게시글 작성자로 검색 -->
+    <select id="searchByWriter" parameterType="com.ssafy.trip.model.dto.SearchCondition" resultType="com.ssafy.trip.model.dto.Board">
+        select * 
+        from board
+        <where>
+	        <if test="key != null and word != null and word != ''">
+	            writer like CONCAT('%', #{word}, '%')
+	        </if>
+	    </where>
+    </select>
+	
+	
+</mapper>
