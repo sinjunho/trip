@@ -21,19 +21,16 @@ public class JwtTokenUtil {
     @Value("${jwt.secret:defaultsecretkeymustbeatleast32characters}")
     private String secret;
 
-    @Value("${jwt.expiration:86400000}") // 기본 : 24 시간
+    @Value("${jwt.expiration:86400000}") // 기본값 24시간
     private long expiration;
     
-    // Generate token for user
+    // 사용자 역할 정보를 토큰에 추가
     public String generateToken(UserDetails userDetails) {
         Map<String, Object> claims = new HashMap<>();
+        claims.put("roles", userDetails.getAuthorities());
         return doGenerateToken(claims, userDetails.getUsername());
     }
     
-    // While creating the token:
-    // 1. Define claims of the token, like Issuer, Expiration, Subject, and the ID
-    // 2. Sign the JWT using the HS512 algorithm and secret key
-    // 3. Convert it to a compact JWT string
     private String doGenerateToken(Map<String, Object> claims, String subject) {
         Date now = new Date();
         Date expiryDate = new Date(now.getTime() + expiration);
@@ -49,35 +46,35 @@ public class JwtTokenUtil {
                 .compact();
     }
     
-    // Validate token
+    // 토큰 검증
     public boolean validateToken(String token, UserDetails userDetails) {
         final String username = extractUsername(token);
         return (username.equals(userDetails.getUsername()) && !isTokenExpired(token));
     }
     
-    // Extract username from token
+    // 토큰에서 사용자명 추출
     public String extractUsername(String token) {
         return extractClaim(token, Claims::getSubject);
     }
     
-    // Extract expiration date from token
+    // 토큰에서 만료 시간 추출
     public Date extractExpiration(String token) {
         return extractClaim(token, Claims::getExpiration);
     }
     
-    // Extract claim from token
+    // 토큰에서 클레임 추출
     public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
         final Claims claims = extractAllClaims(token);
         return claimsResolver.apply(claims);
     }
     
-    // Check if token is expired
+    // 토큰 만료 여부 확인
     private boolean isTokenExpired(String token) {
         final Date expiration = extractExpiration(token);
         return expiration.before(new Date());
     }
     
-    // Extract all claims from token
+    // 토큰에서 모든 클레임 추출
     private Claims extractAllClaims(String token) {
         Key key = Keys.hmacShaKeyFor(secret.getBytes());
         return Jwts.parserBuilder()

@@ -2,7 +2,6 @@ package com.ssafy.trip.security;
 
 import java.io.IOException;
 
-import org.springframework.context.annotation.Lazy;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -23,22 +22,26 @@ public class JwtRequestFilter extends OncePerRequestFilter {
     private final CustomUserDetailsService userDetailsService;
     private final JwtTokenUtil jwtTokenUtil;
 
-    @Lazy
-    public JwtRequestFilter(JwtTokenUtil jwtTokenUtil, @Lazy CustomUserDetailsService userDetailsService) {
+    public JwtRequestFilter(JwtTokenUtil jwtTokenUtil, CustomUserDetailsService userDetailsService) {
         this.jwtTokenUtil = jwtTokenUtil;
         this.userDetailsService = userDetailsService;
     }
-    
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
             throws ServletException, IOException {
 
         final String requestTokenHeader = request.getHeader("Authorization");
-
-        String username = null;
+        String path = request.getRequestURI();
+        
+        // 정적 리소스나 공개 경로에 대해서는 로깅하지 않음
+        boolean isStaticResource = path.contains("/css/") || 
+                                   path.contains("/js/") || 
+                                   path.contains("/img/") || 
+                                   path.endsWith(".ico");
+        
         String jwtToken = null;
+        String username = null;
 
-        // JWT Token is in the form "Bearer token". Remove Bearer word and get only the Token
         if (requestTokenHeader != null && requestTokenHeader.startsWith("Bearer ")) {
             jwtToken = requestTokenHeader.substring(7);
             try {
@@ -46,21 +49,22 @@ public class JwtRequestFilter extends OncePerRequestFilter {
             } catch (Exception e) {
                 log.error("JWT Token processing error", e);
             }
-        } else {
-            log.debug("JWT Token does not begin with Bearer String");
+        } else if (!isStaticResource && !path.contains("/member/login") && !path.equals("/")) {
+            // 정적 리소스, 로그인 페이지, 루트 페이지가 아닌 경우에만 로깅
+            log.debug("JWT Token does not begin with Bearer String or not found for path: {}", path);
         }
 
-        // Once we get the token validate it.
+        // 토큰이 있고 인증되지 않은 상태라면 인증 진행
         if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
             UserDetails userDetails = this.userDetailsService.loadUserByUsername(username);
 
-            // If token is valid configure Spring Security to manually set authentication
+            // 토큰이 유효하다면 Spring Security 인증 설정
             if (jwtTokenUtil.validateToken(jwtToken, userDetails)) {
                 UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
                         userDetails, null, userDetails.getAuthorities());
                 authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                 
-                // Set the authentication in context
+                // 인증 정보 설정
                 SecurityContextHolder.getContext().setAuthentication(authToken);
             }
         }
