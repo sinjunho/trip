@@ -10,8 +10,6 @@
 <link rel="stylesheet" href="${root}/css/member.css">
 </head>
 <body>
-
-
     <div class="auth-wrapper">
         <div class="auth-box">
             <div class="auth-image">
@@ -27,7 +25,7 @@
                     <p>Enjoy Trip 서비스를 이용하기 위한 계정을 만들어보세요</p>
                 </div>
                 
-                <form action="${root}/member/regist" method="post">                   
+                <form id="register-form">
                     <div class="form-row">
                         <div class="form-col">
                             <div class="form-group">
@@ -87,18 +85,44 @@
                     <a href="#" class="social-btn"><i class="fab fa-kakao">K</i></a>
                 </div>
                 
-                <c:if test="${!empty error}">
-                    <div class="alert-error">
-                        <i class="fas fa-exclamation-circle"></i> ${error}
-                    </div>
-                </c:if>
+                <div id="register-error" class="alert-error" style="display: none">
+                    <i class="fas fa-exclamation-circle"></i> <span id="error-text"></span>
+                </div>
                 
                 <div class="auth-footer">
-                    <p>이미 계정이 있으신가요? <a href="${root}/member?action=login-member-form">로그인</a></p>
+                    <p>이미 계정이 있으신가요? <a href="${root}/member/login">로그인</a></p>
                 </div>
             </div>
         </div>
     </div>
-	<%@ include file="/WEB-INF/views/fragments/footer.jsp"%>
+    
+    <%@ include file="/WEB-INF/views/fragments/footer.jsp"%>
+    
+    <script src="${root}/js/auth.js"></script>
+    <script>
+        document.getElementById('register-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const userData = {
+                name: document.getElementById('name').value,
+                id: document.getElementById('id').value,
+                password: document.getElementById('password').value,
+                address: document.getElementById('address').value,
+                tel: document.getElementById('tel').value
+            };
+            
+            register(userData)
+                .then(data => {
+                    alert('회원가입이 완료되었습니다. 로그인 페이지로 이동합니다.');
+                    window.location.href = '${root}/member/login';
+                })
+                .catch(error => {
+                    const errorElement = document.getElementById('register-error');
+                    const errorText = document.getElementById('error-text');
+                    errorElement.style.display = 'block';
+                    errorText.textContent = '회원가입에 실패했습니다. 입력 정보를 확인해주세요.';
+                });
+        });
+    </script>
 </body>
 </html>

@@ -6,7 +6,6 @@ import java.util.Map;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -34,15 +33,22 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<?> createAuthenticationToken(@RequestBody Map<String, String> authRequest) throws Exception {
         try {
-            authenticate(authRequest.get("id"), authRequest.get("password"));
+            // Spring Security 인증
+            authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(
+                    authRequest.get("id"),
+                    authRequest.get("password")
+                )
+            );
             
+            // 토큰 생성
             final UserDetails userDetails = userDetailsService.loadUserByUsername(authRequest.get("id"));
             final String token = jwtTokenUtil.generateToken(userDetails);
             
-            // Get member details
+            // 사용자 정보 조회
             Member member = memberService.selectDetail(authRequest.get("id"));
             
-            // Remove sensitive information
+            // 민감 정보 제거
             member.setPassword(null);
             
             Map<String, Object> response = new HashMap<>();
@@ -50,9 +56,9 @@ public class AuthController {
             response.put("member", member);
             
             return ResponseEntity.ok(response);
-        } catch (Exception e) {
+        } catch (BadCredentialsException e) {
             return ResponseEntity.badRequest().body(Map.of(
-                "message", "Authentication failed", 
+                "message", "Invalid username or password", 
                 "error", e.getMessage()
             ));
         }
@@ -73,16 +79,6 @@ public class AuthController {
                 "message", "Registration failed", 
                 "error", e.getMessage()
             ));
-        }
-    }
-    
-    private void authenticate(String username, String password) throws Exception {
-        try {
-            authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(username, password));
-        } catch (DisabledException e) {
-            throw new Exception("USER_DISABLED", e);
-        } catch (BadCredentialsException e) {
-            throw new Exception("INVALID_CREDENTIALS", e);
         }
     }
 }

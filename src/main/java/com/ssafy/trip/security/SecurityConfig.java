@@ -35,37 +35,29 @@ public class SecurityConfig {
             .and()
             .csrf().disable()
             .authorizeHttpRequests(authorize -> authorize
-                // 정적 리소스와 인증 안 해도 되는 페이지들
-                .requestMatchers("/", "/index", "/css/**", "/js/**", "/img/**").permitAll()
-                .requestMatchers("/main/**", "/attraction/**", "/board/**", "/member/login", "/member/regist").permitAll()
-                // WEB-INF 디렉토리 내의 모든 JSP 파일에 대한 접근 허용
-                .requestMatchers("/WEB-INF/views/**").permitAll()
-                // API 엔드포인트
+                // 정적 리소스 및 공개 페이지 (순서 중요!)
+                .requestMatchers("/css/**", "/js/**", "/img/**", "/favicon.ico").permitAll()
+                .requestMatchers("/", "/index").permitAll()
+                // 인증 관련 엔드포인트
+                .requestMatchers("/member/login", "/member/regist", "/member/password").permitAll()
                 .requestMatchers("/api/auth/**").permitAll()
+                // 여행지 정보 공개 페이지
+                .requestMatchers("/attraction/get-attraction-form", "/attraction/getAttractionList").permitAll()
                 .requestMatchers("/api/attractions/**").permitAll()
+                // 게시판 조회
+                .requestMatchers("/board/list", "/board/detail").permitAll()
                 .requestMatchers("/api/boards").permitAll()
-                .requestMatchers("/api/boards/{id}").permitAll()
-                
-                // Protected endpoints
-                .requestMatchers("/api/members/**").authenticated()
-                .requestMatchers("/member/**").authenticated()
-                .requestMatchers("/api/boards/create").authenticated()
-                .requestMatchers("/api/boards/{id}/update").authenticated()
-                .requestMatchers("/api/boards/{id}/delete").authenticated()
-                
-                // Admin endpoints
-                .requestMatchers("/api/admin/**").hasRole("ADMIN")
-                
                 // 나머지는 인증 필요
                 .anyRequest().authenticated()
             )
             .exceptionHandling()
             .authenticationEntryPoint(jwtAuthenticationEntryPoint)
             .and()
+            // JWT는 세션을 사용하지 않으므로 STATELESS로 설정
             .sessionManagement()
             .sessionCreationPolicy(SessionCreationPolicy.STATELESS);
             
-        // JWT 토큰 필터 추가
+        // JWT 필터 추가
         http.addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
         
         return http.build();
@@ -74,9 +66,9 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.addAllowedOrigin("*"); // 모든 출처 허용
-        configuration.addAllowedMethod("*"); // 모든 HTTP 메서드 허용
-        configuration.addAllowedHeader("*"); // 모든 헤더 허용
+        configuration.addAllowedOrigin("*");
+        configuration.addAllowedMethod("*");
+        configuration.addAllowedHeader("*");
         
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
