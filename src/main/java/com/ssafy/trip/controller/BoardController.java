@@ -27,12 +27,13 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
+import lombok.RequiredArgsConstructor;
 
 @Controller
 @RequestMapping("/board")
+@RequiredArgsConstructor
 public class BoardController extends HttpServlet {
-	private static final long serialVersionUID = 1L;
-	private final BoardService bService = BasicBoardService.getService();
+	private final BoardService bService;
 
 //    protected void service(HttpServletRequest request, HttpServletResponse response)
 //            throws ServletException, IOException {
@@ -48,7 +49,8 @@ public class BoardController extends HttpServlet {
 //            default -> response.sendError(HttpServletResponse.SC_NOT_FOUND);
 //        }
 //    }
-
+	
+	// 게시글 수정 폼 페이지
 	@GetMapping("/modify-form")
 	private String prepareModifyForm(@RequestParam int bno, Model model) {
 		try {
@@ -61,13 +63,15 @@ public class BoardController extends HttpServlet {
 			return "board/board-list";
 		}
 	}
-
+	
+	// 게시글 등록 폼 페이지
 	@GetMapping("/write-form")
 	private String writeForm() {
 		return "board/board-write-form";
 
 	}
 
+	// 게시글 등록
 	@PostMapping("/write")
 	private String writeBoard(@RequestParam String title, 
 			@RequestParam String content, Model model,
@@ -85,6 +89,7 @@ public class BoardController extends HttpServlet {
 		}
 	}
 
+	// 게시글 목록
 	@GetMapping("/list-page")
 	private String boardList(@RequestParam String key, @RequestParam String word,
 			@RequestParam(defaultValue = "1") int currentPage, HttpSession session, Model model) {
@@ -107,6 +112,7 @@ public class BoardController extends HttpServlet {
 		}
 	}
 
+	// 게시글 상세 페이지
 	@GetMapping("/detail")
 	private String boardDetail(@RequestParam int bno, HttpSession session, Model model) {
 		try {
@@ -133,6 +139,7 @@ public class BoardController extends HttpServlet {
 		}
 	}
 
+	// 게시글 수정
 	@PostMapping("/modify")
 	private String modifyBoard(@RequestParam int bno, @RequestParam String title, @RequestParam String content,
 			Model model) {
@@ -146,6 +153,7 @@ public class BoardController extends HttpServlet {
 		}
 	}
 
+	// 게시글 삭제
 	@PostMapping("/delete")
 	private String deleteBoard(@RequestParam int bno, Model model) {
 		try {
@@ -158,6 +166,7 @@ public class BoardController extends HttpServlet {
 		}
 	}
 
+	// 게시글 검색
 	@GetMapping("/list")
 	private String searchBy(@RequestParam(required = false) String key, @RequestParam(required = false) String word,
 			@RequestParam(defaultValue = "1") int currentPage, Model model, HttpSession session) {

@@ -13,22 +13,22 @@ import com.ssafy.trip.model.dto.SearchCondition;
 @Mapper
 public interface BoardDao {
 
-	int insert(Connection con, Board board) throws SQLException;
+	int insert(Board board) throws SQLException;
 
-	List<Board> search(Connection con, SearchCondition condition) throws SQLException;
+	List<Board> search(SearchCondition condition) throws SQLException;
 
-	Board selectDetail(Connection con, int bno) throws SQLException;
+	Board selectDetail(int bno) throws SQLException;
 
-	int update(Connection con, Board board) throws SQLException;
+	int update(Board board) throws SQLException;
 
-	int delete(Connection con, int bno) throws SQLException;
+	int delete(int bno) throws SQLException;
 
-	int getTotalCount(Connection con, SearchCondition condition) throws SQLException;
+	int getTotalCount(SearchCondition condition) throws SQLException;
 
-	int updateViewCount(Connection con, int bno) throws SQLException;
+	int updateViewCount(int bno) throws SQLException;
 	
-	List<Board> searchByTitle(Connection con, SearchCondition condition) throws SQLException;
+	List<Board> searchByTitle(SearchCondition condition) throws SQLException;
 		
 		
-	List<Board> searchByWriter(Connection con, SearchCondition condition) throws SQLException;
+	List<Board> searchByWriter(SearchCondition condition) throws SQLException;
 }
