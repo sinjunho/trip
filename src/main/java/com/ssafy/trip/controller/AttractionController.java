@@ -44,7 +44,6 @@ public class AttractionController implements ControllerHelper {
     private String keyData;
 
     @GetMapping("/getGugun")
-    @ResponseBody
     public ResponseEntity<List<Map<String, String>>> getGugun(@RequestParam("sido") String sidoValue, Model model) {
         try {
             System.out.println("시도값으로 구군 조회: " + sidoValue);
