@@ -5,6 +5,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.List;
 
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.ssafy.trip.model.dao.MemberDao;
@@ -18,7 +19,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class BasicMemberService implements MemberService {
     private final MemberDao dao;
-  
+    private final PasswordEncoder passwordEncoder;
     private static String pwSalt = "294c892eefc3c87a529fb28392c924bb";
  
    
@@ -58,20 +59,38 @@ public class BasicMemberService implements MemberService {
     	return hexString.toString().toUpperCase();
     }
     
+//    @Override
+//    public int registMember(Member member)  {      
+//			member.setPassword(getSHA(member.getPassword()));
+//			return  dao.insert(member);
+//	
+//			
+//    }
+//
+//    @Override
+//    public Member login(String id, String password)  {
+//    		password = getSHA(password);
+//    		return dao.login(id, password);    		
+//    }
+    
     @Override
-    public int registMember(Member member)  {      
-			member.setPassword(getSHA(member.getPassword()));
-			return  dao.insert(member);
-	
-			
+    public int registMember(Member member) {
+        // 비밀번호 암호화
+        member.setPassword(passwordEncoder.encode(member.getPassword()));
+        return dao.insert(member);
     }
 
     @Override
-    public Member login(String id, String password)  {
-    		password = getSHA(password);
-    		return dao.login(id, password);    		
+    public Member login(String id, String password) {
+        Member member = dao.selectDetail(id);
+        
+        if (member != null && passwordEncoder.matches(password, member.getPassword())) {
+            return member;
+        }
+        
+        return null;
     }
-
+    
 	@Override
 	public void modifyMember(String id, String name, String password, String address, String tel)  {		
     		password = getSHA(password);

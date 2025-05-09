@@ -29,6 +29,8 @@ public class MemberRestController {
     
     private final MemberService memberService;
     
+    
+    
     @PostMapping("/register")
     @Operation(summary = "회원 등록", description = "새로운 회원을 등록합니다.")
     @ApiResponse(responseCode = "201", description = "회원 등록 성공")
