@@ -5,17 +5,24 @@ import java.util.Map;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import com.ssafy.trip.model.dto.Member;
 import com.ssafy.trip.model.dto.Page;
 import com.ssafy.trip.model.dto.SearchCondition;
 import com.ssafy.trip.model.service.MemberService;
+import com.ssafy.trip.security.JwtTokenProvider;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpSession;
@@ -28,7 +35,7 @@ import lombok.RequiredArgsConstructor;
 public class MemberRestController {
     
     private final MemberService memberService;
-    
+    private final JwtTokenProvider jwtTokenProvider;
     
     
     @PostMapping("/register")
@@ -60,8 +67,7 @@ public class MemberRestController {
     @ApiResponse(responseCode = "401", description = "인증 실패")
     public ResponseEntity<?> login(
             @Parameter(description = "로그인 정보", required = true) 
-            @RequestBody Map<String, String> loginData, 
-            HttpSession session) {
+            @RequestBody Map<String, String> loginData) {
         try {
             String id = loginData.get("id");
             String password = loginData.get("password");
@@ -69,13 +75,17 @@ public class MemberRestController {
             Member member = memberService.login(id, password);
             
             if (member != null) {
+                // JWT 토큰 생성
+                String token = jwtTokenProvider.createToken(member.getId(), member.getRole());
+                
                 // 응답에서 비밀번호 제거
                 member.setPassword(null);
                 
-                // 세션 저장
-                session.setAttribute("member", member);
+                Map<String, Object> response = new HashMap<>();
+                response.put("token", token);
+                response.put("user", member);
                 
-                return ResponseEntity.ok(member);
+                return ResponseEntity.ok(response);
             } else {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(Map.of("message", "잘못된 인증"));
