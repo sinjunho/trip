@@ -125,6 +125,19 @@
     <version>0.11.5</version>
     <scope>runtime</scope>
 </dependency>
+
+<!-- OpenAI API 클라이언트 -->
+<dependency>
+    <groupId>com.theokanning.openai-gpt3-java</groupId>
+    <artifactId>service</artifactId>
+    <version>0.12.0</version>
+</dependency>
+
+<!-- 또는 외부 AI 서비스와의 통신을 위한 WebClient -->
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-webflux</artifactId>
+</dependency>
 	</dependencies>
 
 	<build>
