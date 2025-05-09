@@ -34,21 +34,6 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class BoardController extends HttpServlet {
 	private final BoardService bService;
-
-//    protected void service(HttpServletRequest request, HttpServletResponse response)
-//            throws ServletException, IOException {
-//        String action = request.getParameter("action");
-//        switch (action) {
-//            case "write-form" -> forward(request, response, "/board/board-write-form.jsp");
-//            case "write" -> writeBoard(request, response);
-//            case "list" -> searchBy(request, response);
-//            case "detail" -> boardDetail(request, response);
-//            case "modify-form" -> prepareModifyForm(request, response);
-//            case "modify" -> modifyBoard(request, response);
-//            case "delete" -> deleteBoard(request, response);
-//            default -> response.sendError(HttpServletResponse.SC_NOT_FOUND);
-//        }
-//    }
 	
 	// 게시글 수정 폼 페이지
 	@GetMapping("/modify-form")

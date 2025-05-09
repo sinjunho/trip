@@ -61,10 +61,12 @@ public class MemberController implements ControllerHelper {
 		}
 	}
 
-	// 로그인 폼 페이지
 	@GetMapping("/login")
-	public String loginForm() {
-		return "member/member-login-form";
+	public String loginForm(@RequestParam(required = false) String error, Model model) {
+	    if (error != null) {
+	        model.addAttribute("error", "아이디 또는 비밀번호가 올바르지 않습니다.");
+	    }
+	    return "member/member-login-form";
 	}
 
 	// 로그인 처리
