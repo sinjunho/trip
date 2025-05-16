@@ -1,3 +1,4 @@
+// src/main/java/com/ssafy/trip/config/CorsConfig.java
 package com.ssafy.trip.config;
 
 import org.springframework.context.annotation.Bean;
@@ -14,9 +15,11 @@ public class CorsConfig {
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         CorsConfiguration config = new CorsConfiguration();
         
-        // 허용할 프론트엔드 오리진 설정 (개발 환경)
+        // 모든 오리진 허용 (개발 환경용)
+        config.addAllowedOrigin("http://localhost:5173"); // Vite 개발 서버 포트
+        config.addAllowedOrigin("http://localhost:5174"); // Vite 개발 서버 포트
         config.addAllowedOrigin("http://localhost:3000");
-        config.addAllowedOrigin("http://localhost:5173"); // Vite 기본 포트
+        config.addAllowedOrigin("http://localhost:8081");
         
         // 필요한 경우 프로덕션 환경의 도메인도 추가
         // config.addAllowedOrigin("https://your-production-domain.com");
