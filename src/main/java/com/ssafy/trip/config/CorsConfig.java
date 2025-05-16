@@ -18,6 +18,7 @@ public class CorsConfig {
         // 모든 오리진 허용 (개발 환경용)
         config.addAllowedOrigin("http://localhost:5173"); // Vite 개발 서버 포트
         config.addAllowedOrigin("http://localhost:5174"); // Vite 개발 서버 포트
+        config.addAllowedOrigin("http://localhost:5175"); // Vite 개발 서버 포트
         config.addAllowedOrigin("http://localhost:3000");
         config.addAllowedOrigin("http://localhost:8081");
         
