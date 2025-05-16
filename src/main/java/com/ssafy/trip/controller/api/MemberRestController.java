@@ -81,9 +81,10 @@ public class MemberRestController {
                 // 응답에서 비밀번호 제거
                 member.setPassword(null);
                 
+                // 요청한 형식대로 응답 객체 구성
                 Map<String, Object> response = new HashMap<>();
-                response.put("token", token);
                 response.put("user", member);
+                response.put("token", token);
                 
                 return ResponseEntity.ok(response);
             } else {
