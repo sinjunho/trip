@@ -20,11 +20,14 @@ import com.ssafy.trip.model.dto.Member;
 import com.ssafy.trip.model.dto.Page;
 import com.ssafy.trip.model.dto.SearchCondition;
 import com.ssafy.trip.model.service.BoardService;
+import com.ssafy.trip.model.service.MemberService;
+import com.ssafy.trip.security.JwtTokenProvider;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 
@@ -35,6 +38,8 @@ import lombok.RequiredArgsConstructor;
 public class BoardRestController {
     
     private final BoardService boardService;
+    private final JwtTokenProvider jwtTokenProvider;
+    private final MemberService memberService;
     
     @GetMapping
     @Operation(summary = "게시글 목록 조회", description = "검색 조건에 맞는 게시글 목록을 조회합니다.")
@@ -88,26 +93,43 @@ public class BoardRestController {
     public ResponseEntity<?> createBoard(
             @Parameter(description = "작성할 게시글 정보", required = true) 
             @RequestBody Board board, 
-            HttpSession session) {
+            HttpServletRequest request) {
         try {
-            // 로그인 확인
-            Member member = (Member) session.getAttribute("member");
-            if (member == null) {
+            // JWT 토큰에서 사용자 정보 가져오기
+            String token = extractTokenFromRequest(request);
+            if (token != null && jwtTokenProvider.validateToken(token)) {
+                String username = jwtTokenProvider.getUsernameFromToken(token);
+                // 회원 정보 조회
+                Member member = memberService.selectDetail(username);
+                
+                if (member == null) {
+                    return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body(Map.of("message", "게시글을 작성하려면 로그인이 필요합니다."));
+                }
+                
+                // 작성자 설정
+                board.setWriter(member.getName());
+                boardService.writeBoard(board);
+                
+                return ResponseEntity.status(HttpStatus.CREATED)
+                    .body(Map.of("message", "게시글이 성공적으로 작성되었습니다."));
+            } else {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(Map.of("message", "게시글을 작성하려면 로그인이 필요합니다."));
             }
-            
-            // 작성자 설정
-            board.setWriter(member.getName());
-            
-            boardService.writeBoard(board);
-            
-            return ResponseEntity.status(HttpStatus.CREATED)
-                .body(Map.of("message", "게시글이 성공적으로 작성되었습니다."));
         } catch (SQLException e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of("message", "게시글 작성 중 오류 발생: " + e.getMessage()));
         }
+    }
+
+    // JWT 토큰 추출 메서드
+    private String extractTokenFromRequest(HttpServletRequest request) {
+        String bearerToken = request.getHeader("Authorization");
+        if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
+            return bearerToken.substring(7);
+        }
+        return null;
     }
     
     @PutMapping("/{bno}")

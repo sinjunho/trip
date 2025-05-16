@@ -18,7 +18,7 @@
     </select>
     
     <!-- 게시판 상세 조회 -->
-    <select id="selectDetail" resultType="com.ssafy.trip.model.dto.Member">
+    <select id="selectDetail" resultType="com.ssafy.trip.model.dto.Board">
         select *
         from board 
         where bno=#{bno}
