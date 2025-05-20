@@ -81,7 +81,7 @@ public class AttractionRestController {
     @ApiResponse(responseCode = "200", description = "랜덤 관광지 조회 성공")
     public ResponseEntity<?> getRandomAttractions(
             @Parameter(description = "가져올 관광지 개수") 
-            @RequestParam(defaultValue = "6") int count) {
+            @RequestParam(defaultValue = "8") int count) {
         try {
             List<Attraction> attractions = attractionService.getRandomAttractions(count);
             return ResponseEntity.ok(attractions);
