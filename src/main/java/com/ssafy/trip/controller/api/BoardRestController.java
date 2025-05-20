@@ -3,6 +3,7 @@ package com.ssafy.trip.controller.api;
 import java.sql.SQLException;
 import java.util.Map;
 
+import org.springframework.security.core.Authentication;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -28,9 +29,10 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/boards")
 @RequiredArgsConstructor
@@ -133,16 +135,10 @@ public class BoardRestController {
     }
     
     @PutMapping("/{bno}")
-    @Operation(summary = "게시글 수정", description = "게시글 정보를 수정합니다.")
-    @ApiResponse(responseCode = "200", description = "게시글 수정 성공")
-    @ApiResponse(responseCode = "403", description = "권한 없음")
-    @ApiResponse(responseCode = "404", description = "게시글을 찾을 수 없음")
     public ResponseEntity<?> updateBoard(
-            @Parameter(description = "수정할 게시글 번호", required = true) 
-            @PathVariable int bno,
-            @Parameter(description = "수정할 게시글 정보", required = true) 
-            @RequestBody Board board,
-            HttpSession session) {
+            @PathVariable int bno, 
+            @RequestBody Board board, 
+            org.springframework.security.core.Authentication authentication) {
         try {
             // 게시글 조회
             Board existingBoard = boardService.selectDetail(bno);
@@ -151,34 +147,47 @@ public class BoardRestController {
                     .body(Map.of("message", "게시글을 찾을 수 없습니다."));
             }
             
-            // 권한 확인
-            Member member = (Member) session.getAttribute("member");
-            if (member == null || (!member.getName().equals(existingBoard.getWriter()) && 
-                !member.getRole().equals("admin"))) {
+            // 인증 정보 확인
+            if (authentication == null || !authentication.isAuthenticated()) {
+                log.warn("인증되지 않은 사용자의 수정 시도");
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("message", "로그인이 필요합니다."));
+            }
+            
+            // 사용자 정보 및 권한 확인
+            String username = authentication.getName();
+            boolean isAdmin = authentication.getAuthorities().stream()
+                    .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+            
+            log.info("게시글 수정 요청 - 작성자: '{}', 현재 사용자: '{}', 관리자: {}", 
+                existingBoard.getWriter(), username, isAdmin);
+            
+            // 작성자 비교 시 공백 제거 및 대소문자 무시
+            boolean isAuthor = existingBoard.getWriter().trim().equalsIgnoreCase(username.trim());
+            
+            if (!isAuthor && !isAdmin) {
+                log.warn("권한 없음 - 작성자: '{}', 요청자: '{}'", existingBoard.getWriter(), username);
                 return ResponseEntity.status(HttpStatus.FORBIDDEN)
                     .body(Map.of("message", "이 게시글을 수정할 권한이 없습니다."));
             }
             
-            // 게시글 번호 설정
+            // 게시글 수정 처리
             board.setBno(bno);
             boardService.modifyBoard(board);
             
+            log.info("게시글 수정 성공 - 번호: {}", bno);
             return ResponseEntity.ok(Map.of("message", "게시글이 성공적으로 수정되었습니다."));
-        } catch (SQLException e) {
+        } catch (Exception e) {
+            log.error("게시글 수정 중 오류 발생", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of("message", "게시글 수정 중 오류 발생: " + e.getMessage()));
         }
     }
-    
+
     @DeleteMapping("/{bno}")
-    @Operation(summary = "게시글 삭제", description = "게시글을 삭제합니다.")
-    @ApiResponse(responseCode = "200", description = "게시글 삭제 성공")
-    @ApiResponse(responseCode = "403", description = "권한 없음")
-    @ApiResponse(responseCode = "404", description = "게시글을 찾을 수 없음")
     public ResponseEntity<?> deleteBoard(
-            @Parameter(description = "삭제할 게시글 번호", required = true) 
             @PathVariable int bno, 
-            HttpSession session) {
+            org.springframework.security.core.Authentication authentication) {
         try {
             // 게시글 조회
             Board existingBoard = boardService.selectDetail(bno);
@@ -187,18 +196,37 @@ public class BoardRestController {
                     .body(Map.of("message", "게시글을 찾을 수 없습니다."));
             }
             
-            // 권한 확인
-            Member member = (Member) session.getAttribute("member");
-            if (member == null || (!member.getName().equals(existingBoard.getWriter()) && 
-                !member.getRole().equals("admin"))) {
+            // 인증 정보 확인
+            if (authentication == null || !authentication.isAuthenticated()) {
+                log.warn("인증되지 않은 사용자의 삭제 시도");
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("message", "로그인이 필요합니다."));
+            }
+            
+            // 사용자 정보 및 권한 확인
+            String username = authentication.getName();
+            boolean isAdmin = authentication.getAuthorities().stream()
+                    .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+            
+            log.info("게시글 삭제 요청 - 작성자: '{}', 현재 사용자: '{}', 관리자: {}", 
+                existingBoard.getWriter(), username, isAdmin);
+            
+            // 작성자 비교 시 공백 제거 및 대소문자 무시
+            boolean isAuthor = existingBoard.getWriter().trim().equalsIgnoreCase(username.trim());
+            
+            if (!isAuthor && !isAdmin) {
+                log.warn("권한 없음 - 작성자: '{}', 요청자: '{}'", existingBoard.getWriter(), username);
                 return ResponseEntity.status(HttpStatus.FORBIDDEN)
                     .body(Map.of("message", "이 게시글을 삭제할 권한이 없습니다."));
             }
             
+            // 게시글 삭제 처리
             boardService.deleteBoard(bno);
             
+            log.info("게시글 삭제 성공 - 번호: {}", bno);
             return ResponseEntity.ok(Map.of("message", "게시글이 성공적으로 삭제되었습니다."));
-        } catch (SQLException e) {
+        } catch (Exception e) {
+            log.error("게시글 삭제 중 오류 발생", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of("message", "게시글 삭제 중 오류 발생: " + e.getMessage()));
         }

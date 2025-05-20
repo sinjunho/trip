@@ -5,6 +5,7 @@ import java.util.Map;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -27,7 +28,9 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/members")
 @RequiredArgsConstructor
@@ -224,6 +227,39 @@ public class MemberRestController {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of("message", "회원 목록 조회 중 오류 발생 : " + e.getMessage()));
+        }
+    }
+    
+    @GetMapping("/current")
+    public ResponseEntity<?> getCurrentMember(Authentication authentication) {
+        try {
+            log.debug("현재 사용자 정보 요청 - 인증 객체: {}", authentication);
+            
+            if (authentication == null || !authentication.isAuthenticated()) {
+                log.debug("인증 정보가 없거나 인증되지 않은 사용자");
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("message", "인증되지 않은 사용자입니다."));
+            }
+            
+            String username = authentication.getName();
+            log.debug("현재 로그인한 사용자: {}", username);
+            
+            Member member = memberService.selectDetail(username);
+            if (member == null) {
+                log.debug("사용자 정보를 찾을 수 없음: {}", username);
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("message", "사용자 정보를 찾을 수 없습니다."));
+            }
+            
+            // 응답에서 민감한 정보 제거
+            member.setPassword(null);
+            
+            log.debug("사용자 정보 조회 성공: {}", member.getId());
+            return ResponseEntity.ok(member);
+        } catch (Exception e) {
+            log.error("사용자 정보 조회 중 오류 발생", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(Map.of("message", "사용자 정보 조회 중 오류 발생: " + e.getMessage()));
         }
     }
 }

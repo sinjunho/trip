@@ -42,11 +42,22 @@ public class AttractionRestController {
             @RequestParam(defaultValue = "10") int limit) {
         
         try {
+            // 로그 추가
+            System.out.println("요청 파라미터 - contentTypeName: " + contentTypeName + 
+                              ", areaCode: " + areaCode + 
+                              ", siGunGuCode: " + siGunGuCode + 
+                              ", offset: " + offset + 
+                              ", limit: " + limit);
+            
             List<Attraction> attractions = attractionService.getAttractionByAddressWithPaging(
                 contentTypeName, areaCode, siGunGuCode, offset, limit);
             
+            // 결과 로그 추가
+            System.out.println("검색 결과 개수: " + (attractions != null ? attractions.size() : 0));
+            
             return ResponseEntity.ok(attractions);
         } catch (Exception e) {
+            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of("message", "관광지 목록 조회 중 오류 발생: " + e.getMessage()));
         }

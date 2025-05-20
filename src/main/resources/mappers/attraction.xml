@@ -51,30 +51,29 @@
 	</select>
 
 	<!-- 페이징을 통한 지역 및 콘텐츠 타입별 관광지 조회 -->
-	<select id="getAttractionByAddressWithPaging"
-		resultMap="attractionResultMap">
-		select no, c.content_type_id, content_id, title, content_type_name,
-		sido_name, gugun_name,
-		first_image1, first_image2, map_level, latitude, longitude, tel, a.addr1 addr,
-		homepage, overview, a.view_cnt
-		from attractions a
-		join contenttypes c on (a.content_type_id = c.content_type_id)
-		join (select s.sido_code sido, g.gugun_code gugun, s.sido_name sido_name,
-		g.gugun_name gugun_name
-		from sidos s join guguns g on (s.sido_code = g.sido_code)) sg
-		on (a.area_code = sg.sido and a.si_gun_gu_code = sg.gugun)
-		where 1=1
-		<if test="contentTypeName != null and contentTypeName != ''">
-			and c.content_type_id = #{contentTypeName}
-		</if>
-		<if test="areaCode != null and areaCode != ''">
-			and sg.sido = #{areaCode}
-		</if>
-		<if test="siGunGuCode != null and siGunGuCode != ''">
-			and gugun_name = #{siGunGuCode}
-		</if>
-		limit #{offset}, #{limit}
-	</select>
+	<select id="getAttractionByAddressWithPaging" resultMap="attractionResultMap">
+    select no, c.content_type_id, content_id, title, content_type_name,
+    sido_name, gugun_name,
+    first_image1, first_image2, map_level, latitude, longitude, tel, a.addr1 addr,
+    homepage, overview, a.view_cnt
+    from attractions a
+    join contenttypes c on (a.content_type_id = c.content_type_id)
+    join (select s.sido_code sido, g.gugun_code gugun, s.sido_name sido_name,
+    g.gugun_name gugun_name
+    from sidos s join guguns g on (s.sido_code = g.sido_code)) sg
+    on (a.area_code = sg.sido and a.si_gun_gu_code = sg.gugun)
+    where 1=1
+    <if test="contentTypeName != null and contentTypeName != ''">
+        and c.content_type_id = #{contentTypeName}
+    </if>
+    <if test="areaCode != null and areaCode != ''">
+        and sg.sido = #{areaCode}
+    </if>
+    <if test="siGunGuCode != null and siGunGuCode != ''">
+        and sg.gugun = #{siGunGuCode}  <!-- 수정된 부분: gugun_name -> sg.gugun -->
+    </if>
+    limit #{offset}, #{limit}
+</select>
 
 	<!-- 지역 및 콘텐츠 타입별 관광지 총 개수 조회 -->
 	<select id="getTotalAttractionCount" resultType="int">
