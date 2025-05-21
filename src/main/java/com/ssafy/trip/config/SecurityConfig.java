@@ -1,7 +1,5 @@
 package com.ssafy.trip.config;
 
-import java.util.Arrays;
-
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -13,9 +11,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
-import org.springframework.web.cors.CorsConfiguration;
-import org.springframework.web.cors.CorsConfigurationSource;
-import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.web.filter.CorsFilter;
 
 import com.ssafy.trip.security.CustomUserDetailsService;
 import com.ssafy.trip.security.JwtAuthenticationFilter;
@@ -30,6 +26,7 @@ public class SecurityConfig {
     
     private final CustomUserDetailsService userDetailsService;
     private final JwtTokenProvider jwtTokenProvider;
+    private final CorsFilter corsFilter; // 주입
     
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -44,7 +41,8 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-            .cors().and()  // CORS 활성화
+            // CorsFilter 추가
+            .addFilterBefore(corsFilter, UsernamePasswordAuthenticationFilter.class)
             .csrf().disable()  // REST API이므로 CSRF 보호 비활성화
             .sessionManagement()
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS)  // JWT를 사용하므로 세션 사용 안 함
@@ -93,19 +91,5 @@ public class SecurityConfig {
             );
             
         return http.build();
-    }
-    
-    @Bean
-    public CorsConfigurationSource corsConfigurationSource() {
-        CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(Arrays.asList("http://localhost:5174", "http://localhost:3000", "http://localhost:8081", "http://localhost:5173"));
-        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-        configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "X-Requested-With"));
-        configuration.setAllowCredentials(true);
-        configuration.setMaxAge(3600L);  // 프리플라이트 요청 캐싱 시간 (1시간)
-        
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", configuration);  // 모든 경로에 CORS 설정 적용
-        return source;
     }
 }

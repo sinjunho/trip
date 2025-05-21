@@ -84,10 +84,15 @@ public class MemberRestController {
                 // 응답에서 비밀번호 제거
                 member.setPassword(null);
                 
+                // 디버그 로그 추가
+            
+                
                 // 요청한 형식대로 응답 객체 구성
                 Map<String, Object> response = new HashMap<>();
                 response.put("user", member);
                 response.put("token", token);
+                
+                log.debug("로그인 성공. 사용자: {}, 역할: {}", member.getId(), member.getRole());
                 
                 return ResponseEntity.ok(response);
             } else {
@@ -141,29 +146,41 @@ public class MemberRestController {
             @PathVariable String id,
             @Parameter(description = "수정할 회원 정보", required = true) 
             @RequestBody Member memberData,
-            HttpSession session) {
+            Authentication authentication) {
         try {
-            // 사용자가 승인되었는지 확인
-            Member sessionMember = (Member) session.getAttribute("member");
-            if (sessionMember == null || !sessionMember.getId().equals(id)) {
-                return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body(Map.of("message", "이 회원을 업데이트할 권한이 없습니다."));
+            // 인증 정보 확인
+            if (authentication == null || !authentication.isAuthenticated()) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("message", "로그인이 필요합니다."));
             }
             
+            // 사용자 정보 및 권한 확인
+            String username = authentication.getName();
+            boolean isAdmin = authentication.getAuthorities().stream()
+                    .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+            
+            // 자신의 정보만 수정 가능 (관리자는 모두 가능)
+            if (!username.equals(id) && !isAdmin) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(Map.of("message", "이 회원 정보를 수정할 권한이 없습니다."));
+            }
+            
+            // 회원 정보 수정
             memberService.modifyMember(id, memberData.getName(), memberData.getPassword(), 
                                       memberData.getAddress(), memberData.getTel());
             
-            // 세션 업데이트
+            // 수정된 회원 정보 조회
             Member updatedMember = memberService.selectDetail(id);
-            session.setAttribute("member", updatedMember);
             
             // 응답에서 비밀번호 제거
-            updatedMember.setPassword(null);
+            if (updatedMember != null) {
+                updatedMember.setPassword(null);
+            }
             
             return ResponseEntity.ok(updatedMember);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(Map.of("message", "회원 업데이트 중 오류 발생 : " + e.getMessage()));
+                .body(Map.of("message", "회원 정보 수정 중 오류 발생: " + e.getMessage()));
         }
     }
     
@@ -176,33 +193,47 @@ public class MemberRestController {
             @PathVariable String id,
             @Parameter(description = "삭제 확인을 위한 비밀번호", required = true) 
             @RequestBody Map<String, String> deleteData,
-            HttpSession session) {
+            Authentication authentication) {
         try {
-            // 사용자가 승인되었는지 확인
-//            Member sessionMember = (Member) session.getAttribute("member");
-//            if (sessionMember == null || (!sessionMember.getId().equals(id) && 
-//                !sessionMember.getRole().equals("admin"))) {
-//                return ResponseEntity.status(HttpStatus.FORBIDDEN)
-//                    .body(Map.of("message", "이 회원을 삭제할 권한이 없습니다."));
-//            }
-//            
+            // 인증 정보 확인
+            if (authentication == null || !authentication.isAuthenticated()) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("message", "로그인이 필요합니다."));
+            }
+            
+            // 사용자 정보 및 권한 확인
+            String username = authentication.getName();
+            boolean isAdmin = authentication.getAuthorities().stream()
+                    .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+            
+            // 자신의 계정만 삭제 가능 (관리자는 모두 가능)
+            if (!username.equals(id) && !isAdmin) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(Map.of("message", "이 회원을 삭제할 권한이 없습니다."));
+            }
+            
+            // 비밀번호 확인 (관리자가 아닌 경우)
+            if (!isAdmin) {
+                String password = deleteData.get("password");
+                if (password == null || password.isEmpty()) {
+                    return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body(Map.of("message", "비밀번호를 입력해주세요."));
+                }
+            }
+            
+            // 회원 삭제
             String password = deleteData.get("password");
             int result = memberService.deleteMember(id, password);
             
             if (result > 0) {
-                // 사용자가 자신을 삭제한 경우 세션 무효화
-//                if (sessionMember.getId().equals(id)) {
-//                    session.invalidate();
-//                }
-                
                 return ResponseEntity.ok(Map.of("message", "회원이 성공적으로 삭제되었습니다."));
             } else {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(Map.of("message", "회원을 삭제하지 못했습니다. 비밀번호를 확인하세요"));
+                    .body(Map.of("message", "회원을 삭제하지 못했습니다. 비밀번호를 확인하세요."));
             }
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(Map.of("message", "회원 삭제 중 오류 발생 : " + e.getMessage()));
+                .body(Map.of("message", "회원 삭제 중 오류 발생: " + e.getMessage()));
         }
     }
     

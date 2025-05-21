@@ -22,13 +22,11 @@ import com.ssafy.trip.model.dto.Page;
 import com.ssafy.trip.model.dto.SearchCondition;
 import com.ssafy.trip.model.service.BoardService;
 import com.ssafy.trip.model.service.MemberService;
-import com.ssafy.trip.security.JwtTokenProvider;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -40,7 +38,6 @@ import lombok.extern.slf4j.Slf4j;
 public class BoardRestController {
     
     private final BoardService boardService;
-    private final JwtTokenProvider jwtTokenProvider;
     private final MemberService memberService;
     
     @GetMapping
@@ -95,50 +92,41 @@ public class BoardRestController {
     public ResponseEntity<?> createBoard(
             @Parameter(description = "작성할 게시글 정보", required = true) 
             @RequestBody Board board, 
-            HttpServletRequest request) {
+            Authentication authentication) {
         try {
-            // JWT 토큰에서 사용자 정보 가져오기
-            String token = extractTokenFromRequest(request);
-            if (token != null && jwtTokenProvider.validateToken(token)) {
-                String username = jwtTokenProvider.getUsernameFromToken(token);
-                // 회원 정보 조회
-                Member member = memberService.selectDetail(username);
-                
-                if (member == null) {
-                    return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                        .body(Map.of("message", "게시글을 작성하려면 로그인이 필요합니다."));
-                }
-                
-                // 작성자 설정
-                board.setWriter(member.getName());
-                boardService.writeBoard(board);
-                
-                return ResponseEntity.status(HttpStatus.CREATED)
-                    .body(Map.of("message", "게시글이 성공적으로 작성되었습니다."));
-            } else {
+            // 인증 정보 확인
+            if (authentication == null || !authentication.isAuthenticated()) {
+                log.warn("인증되지 않은 사용자의 게시글 작성 시도");
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(Map.of("message", "게시글을 작성하려면 로그인이 필요합니다."));
             }
+            
+            // 사용자 정보 가져오기
+            String username = authentication.getName();
+            Member member = memberService.selectDetail(username);
+            
+            if (member == null) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("message", "게시글을 작성하려면 로그인이 필요합니다."));
+            }
+            
+            // 작성자 설정
+            board.setWriter(member.getName());
+            boardService.writeBoard(board);
+            
+            return ResponseEntity.status(HttpStatus.CREATED)
+                .body(Map.of("message", "게시글이 성공적으로 작성되었습니다."));
         } catch (SQLException e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of("message", "게시글 작성 중 오류 발생: " + e.getMessage()));
         }
-    }
-
-    // JWT 토큰 추출 메서드
-    private String extractTokenFromRequest(HttpServletRequest request) {
-        String bearerToken = request.getHeader("Authorization");
-        if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
-            return bearerToken.substring(7);
-        }
-        return null;
     }
     
     @PutMapping("/{bno}")
     public ResponseEntity<?> updateBoard(
             @PathVariable int bno, 
             @RequestBody Board board, 
-            org.springframework.security.core.Authentication authentication) {
+            Authentication authentication) {
         try {
             // 게시글 조회
             Board existingBoard = boardService.selectDetail(bno);
@@ -163,7 +151,13 @@ public class BoardRestController {
                 existingBoard.getWriter(), username, isAdmin);
             
             // 작성자 비교 시 공백 제거 및 대소문자 무시
-            boolean isAuthor = existingBoard.getWriter().trim().equalsIgnoreCase(username.trim());
+            Member member = memberService.selectDetail(username);
+            if (member == null) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("message", "사용자 정보를 찾을 수 없습니다."));
+            }
+            
+            boolean isAuthor = existingBoard.getWriter().trim().equalsIgnoreCase(member.getName().trim());
             
             if (!isAuthor && !isAdmin) {
                 log.warn("권한 없음 - 작성자: '{}', 요청자: '{}'", existingBoard.getWriter(), username);
@@ -187,7 +181,7 @@ public class BoardRestController {
     @DeleteMapping("/{bno}")
     public ResponseEntity<?> deleteBoard(
             @PathVariable int bno, 
-            org.springframework.security.core.Authentication authentication) {
+            Authentication authentication) {
         try {
             // 게시글 조회
             Board existingBoard = boardService.selectDetail(bno);
@@ -211,8 +205,14 @@ public class BoardRestController {
             log.info("게시글 삭제 요청 - 작성자: '{}', 현재 사용자: '{}', 관리자: {}", 
                 existingBoard.getWriter(), username, isAdmin);
             
-            // 작성자 비교 시 공백 제거 및 대소문자 무시
-            boolean isAuthor = existingBoard.getWriter().trim().equalsIgnoreCase(username.trim());
+            // 작성자 비교
+            Member member = memberService.selectDetail(username);
+            if (member == null) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("message", "사용자 정보를 찾을 수 없습니다."));
+            }
+            
+            boolean isAuthor = existingBoard.getWriter().trim().equalsIgnoreCase(member.getName().trim());
             
             if (!isAuthor && !isAdmin) {
                 log.warn("권한 없음 - 작성자: '{}', 요청자: '{}'", existingBoard.getWriter(), username);
