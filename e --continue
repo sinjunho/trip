@@ -1,0 +1,52 @@
+[33m4efee1f[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mjunho[m[33m, [m[1;31morigin/junho[m[33m)[m plans
+[33m290f39c[m add
+[33m88140d9[m security
+[33mb4782aa[m add
+[33m164f8a2[m add
+[33mb9b5e4d[m Merge branch 'junho' into 'master'
+[33m3438877[m board mapper edit
+[33m7110f99[m Merge branch 'junho' into 'master'
+[33m43d4b6a[m edit
+[33mecf1db4[m Merge branch 'junho' into 'master'
+[33mb111868[m security, jwt, ai적용
+[33me97a62d[m Update img/security적용 후.png, img/jwt.png, img/회원가입 REST.png, img/chatbot.png, README.md
+[33md3d1bc1[m delete cld
+[33m6f112a7[m jwt
+[33mc9b5666[m security
+[33m7e719c6[m Update README.md, img/랜덤겟.png, img/명세서.png
+[33m54a993f[m Merge branch 'junho' into 'master'
+[33me49ec0c[m swagger add
+[33mecf7d5c[m m
+[33mdc45732[m Merge branch 'gyuwon' into 'master'
+[33mb3a4e05[m[33m ([m[1;31morigin/gyuwon[m[33m)[m Merge branch 'master' into 'gyuwon'
+[33m6a85031[m 게시판 mybatis 적용
+[33md6cc07f[m Merge branch 'junho' into 'master'
+[33meffbb45[m REST API
+[33mf2a7cfd[m s
+[33mcbd89a6[m security적용중
+[33mb6fad3f[m Update README.md
+[33mc7a8f9b[m Update README.md, img/게시판.png, img/맴버목록.png, img/조회전.png, img/상세조회.png, img/로그인전.png, img/로그인후.png
+[33mdb906ec[m Upload New File
+[33m22e7ac5[m Add new directory
+[33mdc5c9b3[m Update README.md
+[33m011430e[m Merge branch 'gyuwon' into 'master'
+[33mdf46dae[m BoardController 작성
+[33m31be492[m Merge branch 'junho' into 'master'
+[33md02f1b8[m attaction 완료
+[33m2cfb2eb[m Merge branch 'gyuwon' into 'master'
+[33m60309de[m BoardController 및 jsp 작성중
+[33m8028589[m Merge branch 'junho' into 'master'
+[33m6d4d6ce[m Update .gitlab-ci.yml file
+[33m494480a[m Merge branch 'master' into 'junho'
+[33mcad4cf6[m 샐럭트 완료
+[33m79ae6fe[m Merge branch 'gyuwon' into 'master'
+[33mc34b116[m BoardController 작성
+[33mcc81091[m Merge branch 'gyuwon' into 'master'
+[33m8620594[m Merge branch 'junho' into 'master'
+[33m69426a7[m AttractionController 작성
+[33m799dd79[m member 완료
+[33m6b18091[m Merge branch 'junho' into 'master'
+[33mdfb3d20[m 컨트롤러 수정
+[33m9a1fc05[m Merge branch 'junho' into 'master'
+[33m51501bf[m 마이그레이션 필요
+[33mbaff06d[m 프로젝트 생성

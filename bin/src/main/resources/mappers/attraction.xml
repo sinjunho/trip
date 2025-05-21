@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  
+<mapper namespace="com.ssafy.trip.model.dao.AttractionDao">
+    <!-- ResultMap 정의 -->
+    <resultMap id="attractionResultMap" type="com.ssafy.trip.model.dto.Attraction">
+        <id property="no" column="no"/>
+        <result property="contentId" column="content_id"/>
+        <result property="title" column="title"/>
+        <result property="contentTypeName" column="content_type_name"/>
+        <result property="sido" column="sido_name"/>
+        <result property="gugun" column="gugun_name"/>
+        <result property="firstImage1" column="first_image1"/>
+        <result property="firstImage2" column="first_image2"/>
+        <result property="mapLevel" column="map_level"/>
+        <result property="latitude" column="latitude"/>
+        <result property="longitude" column="longitude"/>
+        <result property="tel" column="tel"/>
+        <result property="addr" column="addr"/>
+        <result property="homepage" column="homepage"/>
+        <result property="overview" column="overview"/>
+        <result property="viewCnt" column="view_cnt"/>
+    </resultMap>
+    
+    <!-- 지역 및 콘텐츠 타입별 관광지 조회 -->
+    <select id="getAttractionByAddress" resultMap="attractionResultMap">
+        select no, c.content_type_id, content_id, title, content_type_name, sido_name, gugun_name, 
+               first_image1, first_image2, map_level, latitude, longitude, tel, a.addr1 addr, 
+               homepage, overview, a.view_cnt
+        from attractions a 
+        join contenttypes c on (a.content_type_id = c.content_type_id) 
+        join (select s.sido_code sido, g.gugun_code gugun, s.sido_name sido_name, g.gugun_name gugun_name 
+              from sidos s join guguns g on (s.sido_code = g.sido_code)) sg
+        on (a.area_code = sg.sido and a.si_gun_gu_code = sg.gugun) 
+        where 1=1
+        <if test="contentTypeName != null and contentTypeName != ''">
+          and c.content_type_name = #{contentTypeName}
+        </if>
+        <if test="areaCode != null and areaCode != ''">
+          and sido_name = #{areaCode}
+        </if>
+        <if test="siGunGuCode != null and siGunGuCode != ''">
+          and gugun_name = #{siGunGuCode}
+        </if>
+    </select>
+    
+    <!-- 페이징을 통한 지역 및 콘텐츠 타입별 관광지 조회 -->
+    <select id="getAttractionByAddressWithPaging" resultMap="attractionResultMap">
+        select no, c.content_type_id, content_id, title, content_type_name, sido_name, gugun_name, 
+               first_image1, first_image2, map_level, latitude, longitude, tel, a.addr1 addr, 
+               homepage, overview, a.view_cnt
+        from attractions a 
+        join contenttypes c on (a.content_type_id = c.content_type_id) 
+        join (select s.sido_code sido, g.gugun_code gugun, s.sido_name sido_name, g.gugun_name gugun_name 
+              from sidos s join guguns g on (s.sido_code = g.sido_code)) sg
+        on (a.area_code = sg.sido and a.si_gun_gu_code = sg.gugun) 
+        where 1=1
+        <if test="contentTypeName != null and contentTypeName != ''">
+          and c.content_type_id = #{contentTypeName}
+        </if>
+        <if test="areaCode != null and areaCode != ''">
+          and sido_name = #{areaCode}
+        </if>
+        <if test="siGunGuCode != null and siGunGuCode != ''">
+          and gugun_name = #{siGunGuCode}
+        </if>
+        limit #{offset}, #{limit}
+    </select>
+    
+    <!-- 지역 및 콘텐츠 타입별 관광지 총 개수 조회 -->
+    <select id="getTotalAttractionCount" resultType="int">
+        select count(*) as total
+        from attractions a 
+        join contenttypes c on (a.content_type_id = c.content_type_id) 
+        join (select s.sido_code sido, g.gugun_code gugun, s.sido_name sido_name, g.gugun_name gugun_name 
+              from sidos s join guguns g on (s.sido_code = g.sido_code)) sg
+        on (a.area_code = sg.sido and a.si_gun_gu_code = sg.gugun) 
+        where 1=1
+        <if test="contentTypeName != null and contentTypeName != ''">
+          and c.content_type_id = #{contentTypeName}
+        </if>
+        <if test="areaCode != null and areaCode != ''">
+          and sido_name = #{areaCode}
+        </if>
+        <if test="siGunGuCode != null and siGunGuCode != ''">
+          and gugun_name = #{siGunGuCode}
+        </if>
+    </select>
+    
+    <!-- 콘텐츠 타입 조회 - 반환 타입을 java.util.HashMap으로 변경 -->
+    <select id="getContent" resultType="map">
+        select * from contenttypes
+    </select>
+    
+    <!-- 시도 조회 - 반환 타입을 java.util.HashMap으로 변경 -->
+    <select id="getSido" resultType="map">
+        select `sido_code`, `sido_name` from sidos
+    </select>
+    
+   <!-- 구군 조회 -->
+<select id="getGugun" resultType="java.util.HashMap">
+    select g.gugun_code, g.gugun_name 
+    from sidos s join guguns g on (s.sido_code = g.sido_code) 
+    where 
+    <if test="code != null">
+        <choose>
+            <!-- 숫자인지 확인 -->
+            <when test="_databaseId == 'mysql'">
+                (s.sido_code = #{code} OR s.sido_name = #{code})
+            </when>
+            <otherwise>
+                (s.sido_code = #{code} OR s.sido_name = #{code})
+            </otherwise>
+        </choose>
+    </if>
+</select>
+    <!-- 번호로 관광지 조회 -->
+    <select id="getAttractionByNo" resultMap="attractionResultMap">
+        select no, c.content_type_id, content_id, title, content_type_name, sido_name, gugun_name, 
+               first_image1, first_image2, map_level, latitude, longitude, tel, a.addr1 addr, 
+               homepage, overview, a.view_cnt
+        from attractions a 
+        join contenttypes c on (a.content_type_id = c.content_type_id) 
+        join (select s.sido_code sido, g.gugun_code gugun, s.sido_name sido_name, g.gugun_name gugun_name 
+              from sidos s join guguns g on (s.sido_code = g.sido_code)) sg
+        on (a.area_code = sg.sido and a.si_gun_gu_code = sg.gugun) 
+        where no = #{no}
+    </select>
+    
+    <!-- 랜덤 관광지 조회 -->
+    <select id="getRandomAttractions" resultMap="attractionResultMap">
+        select no, c.content_type_id, content_id, title, content_type_name, sido_name, gugun_name, 
+               first_image1, first_image2, map_level, latitude, longitude, tel, a.addr1 addr, 
+               homepage, overview, a.view_cnt
+        from attractions a 
+        join contenttypes c on (a.content_type_id = c.content_type_id) 
+        join (select s.sido_code sido, g.gugun_code gugun, s.sido_name sido_name, g.gugun_name gugun_name 
+              from sidos s join guguns g on (s.sido_code = g.sido_code)) sg
+        on (a.area_code = sg.sido and a.si_gun_gu_code = sg.gugun) 
+        where first_image1 is not null and first_image1 != '' 
+        order by rand() 
+        limit #{count}
+    </select>
+    
+    <!-- 관광지 조회수 증가 -->
+    <update id="updateViewCount">
+        UPDATE attractions SET view_cnt = view_cnt + 1 WHERE no = #{no}
+    </update>
+    
+    <!-- 조회수 있는 모든 관광지 조회 -->
+    <select id="allCountView" resultMap="attractionResultMap">
+        SELECT a.no, a.title, s.sido_name, a.view_cnt 
+        from attractions a join sidos s on(a.area_code = s.sido_code) 
+        where view_cnt >= 1
+    </select>
+</mapper>
