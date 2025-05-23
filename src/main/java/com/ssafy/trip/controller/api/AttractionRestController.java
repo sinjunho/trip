@@ -65,7 +65,7 @@ public class AttractionRestController {
                 .body(Map.of("message", "검색 중 오류가 발생했습니다: " + e.getMessage()));
         }
     }
-    
+
     @GetMapping
     @Operation(summary = "관광지 목록 조회", description = "검색 조건에 맞는 관광지 목록을 조회합니다.")
     @ApiResponse(responseCode = "200", description = "관광지 목록 조회 성공")
