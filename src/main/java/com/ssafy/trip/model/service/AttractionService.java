@@ -6,6 +6,14 @@ import java.util.Map;
 import com.ssafy.trip.model.dto.Attraction;
 
 public interface AttractionService {
+	// 제목으로 관광지 검색
+    List<Attraction> searchAttractionsByTitle(String keyword, String contentTypeName, 
+                                            String areaCode, String siGunGuCode, 
+                                            int offset, int limit) throws Exception;
+    
+    // 키워드 검색 결과 총 개수
+    int getSearchCount(String keyword, String contentTypeName, 
+                      String areaCode, String siGunGuCode) throws Exception;
     
     // 지역 및 콘텐츠 타입별 관광지 조회
     List<Attraction> getAttractionByAddress(String contentTypeName, String areaCode, String siGunGuCode) 
@@ -43,4 +51,10 @@ public interface AttractionService {
     // 거리순 정렬
     Attraction[] sortAttractionListByDistance(List<Attraction> nearAttractionList, Attraction detailAttraction) 
         throws Exception;
+    
+    // 인기 도시 조회
+    List<Map<String, Object>> getPopularCities() throws Exception;
+    
+    // 통계 정보 조회
+    Map<String, Object> getStatistics() throws Exception;
 }

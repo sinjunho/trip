@@ -1,6 +1,6 @@
 package com.ssafy.trip.model.service;
 
-import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -18,6 +18,19 @@ import lombok.RequiredArgsConstructor;
 public class BasicAttractionService implements AttractionService {
     
     private final AttractionDao attractionDao;
+    
+    @Override
+    public List<Attraction> searchAttractionsByTitle(String keyword, String contentTypeName, 
+                                                   String areaCode, String siGunGuCode, 
+                                                   int offset, int limit) throws Exception {
+        return attractionDao.searchAttractionsByTitle(keyword, contentTypeName, areaCode, siGunGuCode, offset, limit);
+    }
+    
+    @Override
+    public int getSearchCount(String keyword, String contentTypeName, 
+                            String areaCode, String siGunGuCode) throws Exception {
+        return attractionDao.getSearchCount(keyword, contentTypeName, areaCode, siGunGuCode);
+    }
     
     @Override
     public List<Attraction> getAttractionByAddress(String contentTypeName, String areaCode, String siGunGuCode)
@@ -222,5 +235,29 @@ public class BasicAttractionService implements AttractionService {
         Attraction tmp = nearAttractionList.get(idx1);
         nearAttractionList.set(idx1, nearAttractionList.get(idx2));
         nearAttractionList.set(idx2, tmp);
+    }
+    
+    @Override
+    public List<Map<String, Object>> getPopularCities() throws Exception {
+        return attractionDao.getPopularCities();
+    }
+
+    @Override
+    public Map<String, Object> getStatistics() throws Exception {
+        Map<String, Object> statistics = new HashMap<>();
+        
+        // 전체 관광지 수
+        int totalCount = attractionDao.getTotalAttractionCount("", "", "");
+        statistics.put("totalCount", totalCount);
+        
+        // 지역별 관광지 수 (상위 10개)
+        List<Map<String, Object>> cityStats = attractionDao.getPopularCities();
+        statistics.put("popularCities", cityStats);
+        
+        // 콘텐츠 타입별 통계
+        List<Map<String, Object>> contentTypeStats = attractionDao.getContentTypeStatistics();
+        statistics.put("contentTypes", contentTypeStats);
+        
+        return statistics;
     }
 }

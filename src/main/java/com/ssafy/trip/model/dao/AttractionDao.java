@@ -10,6 +10,20 @@ import com.ssafy.trip.model.dto.Attraction;
 
 @Mapper
 public interface AttractionDao {
+	
+	// 제목으로 관광지 검색
+    List<Attraction> searchAttractionsByTitle(@Param("keyword") String keyword,
+                                            @Param("contentTypeName") String contentTypeName,
+                                            @Param("areaCode") String areaCode,
+                                            @Param("siGunGuCode") String siGunGuCode,
+                                            @Param("offset") int offset,
+                                            @Param("limit") int limit);
+    
+    // 키워드 검색 결과 총 개수
+    int getSearchCount(@Param("keyword") String keyword,
+                      @Param("contentTypeName") String contentTypeName,
+                      @Param("areaCode") String areaCode,
+                      @Param("siGunGuCode") String siGunGuCode);
     
     // 지역 및 콘텐츠 타입별 관광지 조회
     List<Attraction> getAttractionByAddress(@Param("contentTypeName") String contentTypeName, 
@@ -48,4 +62,9 @@ public interface AttractionDao {
     
     // 조회수 있는 모든 관광지 조회
     List<Attraction> allCountView();
+    
+List<Map<String, Object>> getPopularCities();
+    
+    // 콘텐츠 타입별 통계
+    List<Map<String, Object>> getContentTypeStatistics();
 }

@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  
+<mapper namespace="com.ssafy.trip.model.dao.TravelPlanDao">
+    <!-- 여행 계획 등록 -->
+    <insert id="insertPlan" parameterType="TravelPlan" useGeneratedKeys="true" keyProperty="planId">
+        INSERT INTO travel_plan (user_id, title, description, start_date, end_date)
+        VALUES (#{userId}, #{title}, #{description}, #{startDate}, #{endDate})
+    </insert>
+    
+    <!-- 여행 상세 일정 등록 -->
+    <insert id="insertPlanDetail" parameterType="PlanDetail">
+        INSERT INTO plan_detail 
+        (plan_id, day_number, attraction_id, title, description, visit_time, stay_duration, order_no)
+        VALUES 
+        (#{planId}, #{dayNumber}, #{attractionId}, #{title}, #{description}, 
+         #{visitTime}, #{stayDuration}, #{orderNo})
+    </insert>
+    
+    <!-- 사용자별 여행 계획 조회 -->
+    <select id="getPlansByUserId" resultType="TravelPlan">
+        SELECT * FROM travel_plan WHERE user_id = #{userId} ORDER BY created_at DESC
+    </select>
+    
+    <!-- 이하 생략 (다른 CRUD 쿼리 추가) -->
+</mapper>

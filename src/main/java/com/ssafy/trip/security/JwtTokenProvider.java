@@ -12,7 +12,9 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Component
 public class JwtTokenProvider {
 
@@ -57,8 +59,13 @@ public class JwtTokenProvider {
     }
     
     public Boolean validateToken(String token) {
-        final String username = getUsernameFromToken(token);
-        return (username != null && !isTokenExpired(token));
+        try {
+            final String username = getUsernameFromToken(token);
+            return (username != null && !isTokenExpired(token));
+        } catch (Exception e) {
+            log.error("토큰 검증 중 오류 발생: {}", e.getMessage());
+            return false;
+        }
     }
     
     private Boolean isTokenExpired(String token) {

@@ -128,5 +128,8 @@ public class BasicMemberService implements MemberService {
 	            return dao.selectDetail(id);   
 	    }
 	
-
+	 @Override
+	 public int getTotalMemberCount() throws Exception {
+	     return dao.getTotalMemberCount();
+	 }
 }

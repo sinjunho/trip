@@ -22,3 +22,31 @@ CREATE TABLE board (
     view_cnt int DEFAULT '0',
     PRIMARY KEY (bno)
 ) ENGINE=InnoDB AUTO_INCREMENT=14 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+-- 여행 계획 테이블
+CREATE TABLE travel_plan (
+  plan_id INT AUTO_INCREMENT PRIMARY KEY,
+  user_id VARCHAR(50) NOT NULL,
+  title VARCHAR(100) NOT NULL,
+  description TEXT,
+  start_date DATE NOT NULL,
+  end_date DATE NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  FOREIGN KEY (user_id) REFERENCES member(id)
+);
+
+-- 여행 일정 상세 테이블
+CREATE TABLE plan_detail (
+  detail_id INT AUTO_INCREMENT PRIMARY KEY,
+  plan_id INT NOT NULL,
+  day_number INT NOT NULL,
+  attraction_id INT,
+  title VARCHAR(100),
+  description TEXT,
+  visit_time TIME,
+  stay_duration INT,
+  order_no INT NOT NULL,
+  FOREIGN KEY (plan_id) REFERENCES travel_plan(plan_id) ON DELETE CASCADE,
+  FOREIGN KEY (attraction_id) REFERENCES attractions(no)
+);

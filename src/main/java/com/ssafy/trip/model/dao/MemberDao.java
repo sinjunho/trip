@@ -31,4 +31,7 @@ public interface MemberDao {
     int getTotalCount(SearchCondition condition);
 
     Member selectDetail(@Param("id") String id) ;
+    
+ // 전체 회원 수 조회
+    int getTotalMemberCount();
 }

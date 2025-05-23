@@ -27,11 +27,11 @@
     </div>
     
     <div class="d-flex justify-content-between">
-        <a href="${root}/board?action=list" class="btn btn-secondary">목록으로</a>
+        <a href="${root}/board/list" class="btn btn-secondary">목록으로</a>
         
         <c:if test="${sessionScope.member.id eq board.writer || sessionScope.member.role eq 'admin'}">
             <div>
-                <a href="${root}/board?action=modify-form&bno=${board.bno}" class="btn btn-primary">수정</a>
+                <a href="${root}/board/modify-form?bno=${board.bno}" class="btn btn-primary">수정</a>
                 <a href="#" onclick="deleteBoard(${board.bno})" class="btn btn-danger">삭제</a>
             </div>
         </c:if>
@@ -39,6 +39,7 @@
 </div>
 
 <%@ include file="/WEB-INF/views/fragments/footer.jsp"%>
+
 <script>
 function deleteBoard(bno) {
     if (confirm('정말 삭제하시겠습니까?')) {

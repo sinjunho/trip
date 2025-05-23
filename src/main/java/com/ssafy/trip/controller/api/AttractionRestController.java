@@ -1,19 +1,22 @@
 package com.ssafy.trip.controller.api;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import com.ssafy.trip.model.dto.Attraction;
 import com.ssafy.trip.model.service.AttractionService;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -25,6 +28,43 @@ import lombok.RequiredArgsConstructor;
 public class AttractionRestController {
     
     private final AttractionService attractionService;
+    
+    // 키워드 검색 메서드 추가
+    @GetMapping("/search")
+    public ResponseEntity<?> searchAttractionsByKeyword(
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) String contentTypeName,
+            @RequestParam(required = false) String areaCode,
+            @RequestParam(required = false) String siGunGuCode,
+            @RequestParam(defaultValue = "0") int offset,
+            @RequestParam(defaultValue = "10") int limit) {
+        
+        try {
+            List<Attraction> attractions;
+            int totalCount = 0;
+            
+            if (keyword != null && !keyword.trim().isEmpty()) {
+                // 키워드로 검색
+                attractions = attractionService.searchAttractionsByTitle(keyword, contentTypeName, areaCode, siGunGuCode, offset, limit);
+                totalCount = attractionService.getSearchCount(keyword, contentTypeName, areaCode, siGunGuCode);
+            } else {
+                // 기본 필터 검색
+                attractions = attractionService.getAttractionByAddressWithPaging(contentTypeName, areaCode, siGunGuCode, offset, limit);
+                totalCount = attractionService.getTotalAttractionCount(contentTypeName, areaCode, siGunGuCode);
+            }
+            
+            Map<String, Object> result = new HashMap<>();
+            result.put("attractions", attractions);
+            result.put("totalCount", totalCount);
+            result.put("currentPage", (offset / limit) + 1);
+            result.put("totalPages", (int) Math.ceil((double) totalCount / limit));
+            
+            return ResponseEntity.ok(result);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(Map.of("message", "검색 중 오류가 발생했습니다: " + e.getMessage()));
+        }
+    }
     
     @GetMapping
     @Operation(summary = "관광지 목록 조회", description = "검색 조건에 맞는 관광지 목록을 조회합니다.")
@@ -42,11 +82,22 @@ public class AttractionRestController {
             @RequestParam(defaultValue = "10") int limit) {
         
         try {
+            // 로그 추가
+            System.out.println("요청 파라미터 - contentTypeName: " + contentTypeName + 
+                              ", areaCode: " + areaCode + 
+                              ", siGunGuCode: " + siGunGuCode + 
+                              ", offset: " + offset + 
+                              ", limit: " + limit);
+            
             List<Attraction> attractions = attractionService.getAttractionByAddressWithPaging(
                 contentTypeName, areaCode, siGunGuCode, offset, limit);
             
+            // 결과 로그 추가
+            System.out.println("검색 결과 개수: " + (attractions != null ? attractions.size() : 0));
+            
             return ResponseEntity.ok(attractions);
         } catch (Exception e) {
+            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of("message", "관광지 목록 조회 중 오류 발생: " + e.getMessage()));
         }
@@ -171,6 +222,34 @@ public class AttractionRestController {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of("message", "주변 관광지 조회 중 오류 발생: " + e.getMessage()));
+        }
+    }
+    
+
+
+    @GetMapping("/popular-cities")
+    @Operation(summary = "인기 도시 조회", description = "관광지 수가 많은 인기 도시 목록을 조회합니다.")
+    @ApiResponse(responseCode = "200", description = "인기 도시 조회 성공")
+    public ResponseEntity<?> getPopularCities() {
+        try {
+            List<Map<String, Object>> popularCities = attractionService.getPopularCities();
+            return ResponseEntity.ok(popularCities);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(Map.of("message", "인기 도시 조회 중 오류 발생: " + e.getMessage()));
+        }
+    }
+
+    @GetMapping("/statistics")
+    @Operation(summary = "관광지 통계 조회", description = "전체 관광지 수 등 통계 정보를 조회합니다.")
+    @ApiResponse(responseCode = "200", description = "통계 조회 성공")
+    public ResponseEntity<?> getAttractionStatistics() {
+        try {
+            Map<String, Object> statistics = attractionService.getStatistics();
+            return ResponseEntity.ok(statistics);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(Map.of("message", "통계 조회 중 오류 발생: " + e.getMessage()));
         }
     }
 }

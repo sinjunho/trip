@@ -24,5 +24,8 @@ public interface MemberService {
 
 	Member selectDetail(String id);
 	
+	
+	  // 전체 회원 수 조회
+    int getTotalMemberCount() throws Exception;
 //	String getSalt();
 }

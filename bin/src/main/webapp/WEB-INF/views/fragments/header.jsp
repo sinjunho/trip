@@ -92,29 +92,19 @@ nav ul li a {
 			</div>
 			<nav>
 				<ul>
-					<%
-					if (session.getAttribute("member") == null) {
-					%>
-					<!-- 로그인 안됨 -->
+					
+				
 					<li class="nav-signup"><a
 						href="${root}/member/regist" class="mx-3">
 							회원가입</a></li>
 					<li class="nav-login"><a
 						href="${root}/member/login" class="mx-3">
 							로그인</a></li>
-					<%
-					} else {
-					%>
-					<!-- 로그인 됨 -->
-					<%
-					Member member = (Member) session.getAttribute("member");
-					if (member.getRole() != null && member.getRole().equals("admin")) {
-					%>
+					
+				
 					<li><a href="${root}/member/list"
 						class="mx-3">멤버목록</a></li>
-					<%
-					}
-					%>
+					
 					<li><a href="${root}/board/list" class="mx-3">게시판</a></li>
 					<li><a href="${root}/attraction/get-attraction-form">여행지
 							정보</a></li>
@@ -124,9 +114,7 @@ nav ul li a {
 					<li class="nav-logout"><a
 						href="${root}/member/logout" class="mx-3"> 로그아웃
 					</a></li>
-					<%
-					}
-					%>
+					
 				</ul>
 			</nav>
 		</div>

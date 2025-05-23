@@ -13,7 +13,7 @@
 </head>
 <body>
     <h1>여행지 정보 조회하기</h1>
-    <form action="${root}/attraction/getAttractionList" class="m-3">
+   <form id="search-form" method="GET" action="${root}/attraction/getAttractionList">
         <div class="form-group mb-3">
             <label for="contentTypeName">컨텐츠 선택</label>
             <select name="contentTypeName" id="contentTypeName" class="form-control">

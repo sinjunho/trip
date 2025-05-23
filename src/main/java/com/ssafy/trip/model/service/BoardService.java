@@ -24,4 +24,7 @@ public interface BoardService {
 	Page<Board> searchByTitle(SearchCondition condition) throws SQLException;
 	
 	Page<Board> searchByWriter(SearchCondition condition) throws SQLException;
+	
+	 // 전체 게시글 수 조회
+    int getTotalBoardCount() throws SQLException;
 }

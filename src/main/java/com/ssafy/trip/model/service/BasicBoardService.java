@@ -62,4 +62,9 @@ public class BasicBoardService implements BoardService {
     	List<Board> boards = dao.searchByWriter(condition);
     	return new Page<>(condition, totalItems, boards);
     }
+    
+    @Override
+    public int getTotalBoardCount() throws SQLException {
+        return dao.getTotalBoardCount();
+    }
 }

@@ -101,7 +101,7 @@ input[type='text'] {
 				<tbody id="address-body">
 					<c:forEach items="${nearAttraction }" var="item">
 						<tr>
-							<td><a href="${root }/attraction?action=detailAttraction&no=${item.no }">${item.title }</a></td>
+							<td><a href="${root }/attraction/detailAttraction?no=${item.no }">${item.title }</a></td>
 							<td>${item.addr }</td>
 						</tr>
 					</c:forEach>
