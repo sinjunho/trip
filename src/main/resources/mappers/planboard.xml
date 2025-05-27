@@ -1,0 +1,574 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ssafy.trip.model.dao.PlanBoardDao">
+
+    <!-- ======================== ResultMap 정의 ======================== -->
+    
+    <!-- PlanBoard ResultMap -->
+    <resultMap id="planBoardResultMap" type="com.ssafy.trip.model.dto.PlanBoard">
+        <id property="pboardNo" column="pboard_no" />
+        <result property="title" column="title" />
+        <result property="content" column="content" />
+        <result property="writer" column="writer" />
+        <result property="userId" column="user_id" />
+        <result property="regDate" column="reg_date" />
+        <result property="updateDate" column="update_date" />
+        <result property="viewCnt" column="view_cnt" />
+        <result property="planId" column="plan_id" />
+        <result property="travelTitle" column="travel_title" />
+        <result property="startDate" column="start_date" />
+        <result property="endDate" column="end_date" />
+        <result property="travelDestinations" column="travel_destinations" />
+        <result property="travelTheme" column="travel_theme" />
+        <result property="estimatedBudget" column="estimated_budget" />
+        <result property="participantCount" column="participant_count" />
+        <result property="travelDuration" column="travel_duration" />
+        <result property="isPublic" column="is_public" />
+        <result property="isFeatured" column="is_featured" />
+        <result property="likeCount" column="like_count" />
+        <result property="commentCount" column="comment_count" />
+        <result property="thumbnailImage" column="thumbnail_image" />
+        <result property="attachmentFiles" column="attachment_files" />
+    </resultMap>
+    
+    <!-- PlanBoardSummary ResultMap -->
+    <resultMap id="planBoardSummaryResultMap" type="com.ssafy.trip.model.dto.PlanBoardSummary">
+        <id property="pboardNo" column="pboard_no" />
+        <result property="title" column="title" />
+        <result property="writer" column="writer" />
+        <result property="userId" column="user_id" />
+        <result property="regDate" column="reg_date" />
+        <result property="viewCnt" column="view_cnt" />
+        <result property="likeCount" column="like_count" />
+        <result property="commentCount" column="comment_count" />
+        <result property="travelTitle" column="travel_title" />
+        <result property="startDate" column="start_date" />
+        <result property="endDate" column="end_date" />
+        <result property="travelDestinations" column="travel_destinations" />
+        <result property="travelTheme" column="travel_theme" />
+        <result property="estimatedBudget" column="estimated_budget" />
+        <result property="participantCount" column="participant_count" />
+        <result property="travelDuration" column="travel_duration" />
+        <result property="thumbnailImage" column="thumbnail_image" />
+        <result property="isFeatured" column="is_featured" />
+        <result property="isLiked" column="is_liked" />
+        <result property="tagNames" column="tag_names" />
+    </resultMap>
+    
+    <!-- PlanBoardComment ResultMap -->
+    <resultMap id="planBoardCommentResultMap" type="com.ssafy.trip.model.dto.PlanBoardComment">
+        <id property="commentId" column="comment_id" />
+        <result property="pboardNo" column="pboard_no" />
+        <result property="userId" column="user_id" />
+        <result property="writer" column="writer" />
+        <result property="content" column="content" />
+        <result property="parentCommentId" column="parent_comment_id" />
+        <result property="regDate" column="reg_date" />
+        <result property="updateDate" column="update_date" />
+        <result property="isDeleted" column="is_deleted" />
+        <result property="replyCount" column="reply_count" />
+    </resultMap>
+    
+    <!-- PlanBoardTag ResultMap -->
+    <resultMap id="planBoardTagResultMap" type="com.ssafy.trip.model.dto.PlanBoardTag">
+        <id property="tagId" column="tag_id" />
+        <result property="tagName" column="tag_name" />
+        <result property="useCount" column="use_count" />
+        <result property="createdAt" column="created_at" />
+    </resultMap>
+    
+    <!-- PlanBoardLike ResultMap -->
+    <resultMap id="planBoardLikeResultMap" type="com.ssafy.trip.model.dto.PlanBoardLike">
+        <id property="likeId" column="like_id" />
+        <result property="pboardNo" column="pboard_no" />
+        <result property="userId" column="user_id" />
+        <result property="createdAt" column="created_at" />
+    </resultMap>
+
+    <!-- ======================== 게시글 CRUD ======================== -->
+    
+    <!-- 게시글 등록 -->
+    <insert id="insertPlanBoard" parameterType="com.ssafy.trip.model.dto.PlanBoard" useGeneratedKeys="true" keyProperty="pboardNo">
+        INSERT INTO plan_board (
+            title, content, writer, user_id, plan_id, travel_title, start_date, end_date,
+            travel_destinations, travel_theme, estimated_budget, participant_count, travel_duration,
+            is_public, is_featured, thumbnail_image, attachment_files
+        ) VALUES (
+            #{title}, #{content}, #{writer}, #{userId}, #{planId}, #{travelTitle}, #{startDate}, #{endDate},
+            #{travelDestinations}, #{travelTheme}, #{estimatedBudget}, #{participantCount}, #{travelDuration},
+            #{isPublic}, #{isFeatured}, #{thumbnailImage}, #{attachmentFiles}
+        )
+    </insert>
+    
+    <!-- 게시글 목록 조회 (요약 정보) -->
+    <select id="selectPlanBoardList" parameterType="com.ssafy.trip.model.dto.PlanBoardSearchCondition" resultMap="planBoardSummaryResultMap">
+        SELECT 
+            pb.pboard_no, pb.title, pb.writer, pb.user_id, pb.reg_date, pb.view_cnt, 
+            pb.like_count, pb.comment_count, pb.travel_title, pb.start_date, pb.end_date,
+            pb.travel_destinations, pb.travel_theme, pb.estimated_budget, pb.participant_count,
+            pb.travel_duration, pb.thumbnail_image, pb.is_featured,
+            CASE 
+                WHEN #{userId} IS NOT NULL AND pbl.user_id IS NOT NULL THEN TRUE 
+                ELSE FALSE 
+            END as is_liked,
+            GROUP_CONCAT(pbt.tag_name ORDER BY pbt.tag_name SEPARATOR ',') as tag_names
+        FROM plan_board pb
+        LEFT JOIN plan_board_like pbl ON pb.pboard_no = pbl.pboard_no AND pbl.user_id = #{userId}
+        LEFT JOIN plan_board_tag_relation pbtr ON pb.pboard_no = pbtr.pboard_no
+        LEFT JOIN plan_board_tag pbt ON pbtr.tag_id = pbt.tag_id
+        WHERE pb.is_public = TRUE
+        <if test="key != null and word != null and word != ''">
+            <choose>
+                <when test="key == 'title'">
+                    AND pb.title LIKE CONCAT('%', #{word}, '%')
+                </when>
+                <when test="key == 'content'">
+                    AND pb.content LIKE CONCAT('%', #{word}, '%')
+                </when>
+                <when test="key == 'writer'">
+                    AND pb.writer LIKE CONCAT('%', #{word}, '%')
+                </when>
+                <when test="key == 'all'">
+                    AND (pb.title LIKE CONCAT('%', #{word}, '%') 
+                         OR pb.content LIKE CONCAT('%', #{word}, '%') 
+                         OR pb.writer LIKE CONCAT('%', #{word}, '%'))
+                </when>
+            </choose>
+        </if>
+        <if test="travelTheme != null and travelTheme != ''">
+            AND pb.travel_theme = #{travelTheme}
+        </if>
+        <if test="destination != null and destination != ''">
+            AND pb.travel_destinations LIKE CONCAT('%', #{destination}, '%')
+        </if>
+        <if test="startDateFrom != null">
+            AND pb.start_date >= #{startDateFrom}
+        </if>
+        <if test="startDateTo != null">
+            <![CDATA[
+            AND pb.start_date <= #{startDateTo}
+            ]]>
+        </if>
+        <if test="budgetMin != null">
+            <![CDATA[
+            AND pb.estimated_budget >= #{budgetMin}
+            ]]>
+        </if>
+        <if test="budgetMax != null">
+            <![CDATA[
+            AND pb.estimated_budget <= #{budgetMax}
+            ]]>
+        </if>
+        <if test="participantCount != null">
+            AND pb.participant_count = #{participantCount}
+        </if>
+        <if test="onlyFeatured">
+            AND pb.is_featured = TRUE
+        </if>
+        <if test="tagName != null and tagName != ''">
+            AND pb.pboard_no IN (
+                SELECT pbtr2.pboard_no 
+                FROM plan_board_tag_relation pbtr2 
+                JOIN plan_board_tag pbt2 ON pbtr2.tag_id = pbt2.tag_id 
+                WHERE pbt2.tag_name = #{tagName}
+            )
+        </if>
+        GROUP BY pb.pboard_no
+        <choose>
+            <when test="sortBy == 'popular'">
+                ORDER BY pb.view_cnt DESC, pb.reg_date DESC
+            </when>
+            <when test="sortBy == 'likes'">
+                ORDER BY pb.like_count DESC, pb.reg_date DESC
+            </when>
+            <otherwise>
+                ORDER BY pb.reg_date DESC
+            </otherwise>
+        </choose>
+        LIMIT #{offset}, #{itemsPerPage}
+    </select>
+    
+    <!-- 게시글 상세 조회 -->
+    <select id="selectPlanBoardDetail" resultMap="planBoardResultMap">
+        SELECT * FROM plan_board WHERE pboard_no = #{pboardNo}
+    </select>
+    
+    <!-- 게시글 수정 -->
+    <update id="updatePlanBoard" parameterType="com.ssafy.trip.model.dto.PlanBoard">
+        UPDATE plan_board SET
+            title = #{title},
+            content = #{content},
+            travel_title = #{travelTitle},
+            start_date = #{startDate},
+            end_date = #{endDate},
+            travel_destinations = #{travelDestinations},
+            travel_theme = #{travelTheme},
+            estimated_budget = #{estimatedBudget},
+            participant_count = #{participantCount},
+            travel_duration = #{travelDuration},
+            is_public = #{isPublic},
+            is_featured = #{isFeatured},
+            thumbnail_image = #{thumbnailImage},
+            attachment_files = #{attachmentFiles},
+            update_date = CURRENT_TIMESTAMP
+        WHERE pboard_no = #{pboardNo}
+    </update>
+    
+    <!-- 게시글 삭제 -->
+    <delete id="deletePlanBoard">
+        DELETE FROM plan_board WHERE pboard_no = #{pboardNo}
+    </delete>
+    
+    <!-- 조회수 증가 -->
+    <update id="updateViewCount">
+        UPDATE plan_board SET view_cnt = view_cnt + 1 WHERE pboard_no = #{pboardNo}
+    </update>
+    
+    <!-- 전체 게시글 수 조회 -->
+    <select id="getTotalPlanBoardCount" parameterType="com.ssafy.trip.model.dto.PlanBoardSearchCondition" resultType="int">
+        SELECT COUNT(DISTINCT pb.pboard_no)
+        FROM plan_board pb
+        LEFT JOIN plan_board_tag_relation pbtr ON pb.pboard_no = pbtr.pboard_no
+        LEFT JOIN plan_board_tag pbt ON pbtr.tag_id = pbt.tag_id
+        WHERE pb.is_public = TRUE
+        <if test="key != null and word != null and word != ''">
+            <choose>
+                <when test="key == 'title'">
+                    AND pb.title LIKE CONCAT('%', #{word}, '%')
+                </when>
+                <when test="key == 'content'">
+                    AND pb.content LIKE CONCAT('%', #{word}, '%')
+                </when>
+                <when test="key == 'writer'">
+                    AND pb.writer LIKE CONCAT('%', #{word}, '%')
+                </when>
+                <when test="key == 'all'">
+                    AND (pb.title LIKE CONCAT('%', #{word}, '%') 
+                         OR pb.content LIKE CONCAT('%', #{word}, '%') 
+                         OR pb.writer LIKE CONCAT('%', #{word}, '%'))
+                </when>
+            </choose>
+        </if>
+        <if test="travelTheme != null and travelTheme != ''">
+            AND pb.travel_theme = #{travelTheme}
+        </if>
+        <if test="destination != null and destination != ''">
+            AND pb.travel_destinations LIKE CONCAT('%', #{destination}, '%')
+        </if>
+        <if test="startDateFrom != null">
+            AND pb.start_date >= #{startDateFrom}
+        </if>
+        <if test="startDateTo != null">
+            <![CDATA[
+            AND pb.start_date <= #{startDateTo}
+            ]]>
+        </if>
+        <if test="budgetMin != null">
+            <![CDATA[
+            AND pb.estimated_budget >= #{budgetMin}
+            ]]>
+        </if>
+        <if test="budgetMax != null">
+            <![CDATA[
+            AND pb.estimated_budget <= #{budgetMax}
+            ]]>
+        </if>
+        <if test="participantCount != null">
+            AND pb.participant_count = #{participantCount}
+        </if>
+        <if test="onlyFeatured">
+            AND pb.is_featured = TRUE
+        </if>
+        <if test="tagName != null and tagName != ''">
+            AND pb.pboard_no IN (
+                SELECT pbtr2.pboard_no 
+                FROM plan_board_tag_relation pbtr2 
+                JOIN plan_board_tag pbt2 ON pbtr2.tag_id = pbt2.tag_id 
+                WHERE pbt2.tag_name = #{tagName}
+            )
+        </if>
+    </select>
+    
+    <!-- 추천 게시글 목록 조회 -->
+    <select id="selectFeaturedPlanBoards" resultMap="planBoardSummaryResultMap">
+        SELECT 
+            pb.pboard_no, pb.title, pb.writer, pb.user_id, pb.reg_date, pb.view_cnt, 
+            pb.like_count, pb.comment_count, pb.travel_title, pb.start_date, pb.end_date,
+            pb.travel_destinations, pb.travel_theme, pb.estimated_budget, pb.participant_count,
+            pb.travel_duration, pb.thumbnail_image, pb.is_featured,
+            FALSE as is_liked,
+            GROUP_CONCAT(pbt.tag_name ORDER BY pbt.tag_name SEPARATOR ',') as tag_names
+        FROM plan_board pb
+        LEFT JOIN plan_board_tag_relation pbtr ON pb.pboard_no = pbtr.pboard_no
+        LEFT JOIN plan_board_tag pbt ON pbtr.tag_id = pbt.tag_id
+        WHERE pb.is_featured = TRUE AND pb.is_public = TRUE
+        GROUP BY pb.pboard_no
+        ORDER BY pb.reg_date DESC
+        LIMIT #{limit}
+    </select>
+    
+    <!-- 인기 게시글 목록 조회 (좋아요 순) -->
+    <select id="selectPopularPlanBoards" resultMap="planBoardSummaryResultMap">
+        SELECT 
+            pb.pboard_no, pb.title, pb.writer, pb.user_id, pb.reg_date, pb.view_cnt, 
+            pb.like_count, pb.comment_count, pb.travel_title, pb.start_date, pb.end_date,
+            pb.travel_destinations, pb.travel_theme, pb.estimated_budget, pb.participant_count,
+            pb.travel_duration, pb.thumbnail_image, pb.is_featured,
+            FALSE as is_liked,
+            GROUP_CONCAT(pbt.tag_name ORDER BY pbt.tag_name SEPARATOR ',') as tag_names
+        FROM plan_board pb
+        LEFT JOIN plan_board_tag_relation pbtr ON pb.pboard_no = pbtr.pboard_no
+        LEFT JOIN plan_board_tag pbt ON pbtr.tag_id = pbt.tag_id
+        WHERE pb.is_public = TRUE
+        GROUP BY pb.pboard_no
+        ORDER BY pb.like_count DESC, pb.view_cnt DESC, pb.reg_date DESC
+        LIMIT #{limit}
+    </select>
+    
+    <!-- 사용자별 게시글 목록 조회 -->
+    <select id="selectPlanBoardsByUserId" resultMap="planBoardSummaryResultMap">
+        SELECT 
+            pb.pboard_no, pb.title, pb.writer, pb.user_id, pb.reg_date, pb.view_cnt, 
+            pb.like_count, pb.comment_count, pb.travel_title, pb.start_date, pb.end_date,
+            pb.travel_destinations, pb.travel_theme, pb.estimated_budget, pb.participant_count,
+            pb.travel_duration, pb.thumbnail_image, pb.is_featured,
+            FALSE as is_liked,
+            GROUP_CONCAT(pbt.tag_name ORDER BY pbt.tag_name SEPARATOR ',') as tag_names
+        FROM plan_board pb
+        LEFT JOIN plan_board_tag_relation pbtr ON pb.pboard_no = pbtr.pboard_no
+        LEFT JOIN plan_board_tag pbt ON pbtr.tag_id = pbt.tag_id
+        WHERE pb.user_id = #{userId}
+        GROUP BY pb.pboard_no
+        ORDER BY pb.reg_date DESC
+        LIMIT #{offset}, #{limit}
+    </select>
+
+    <!-- ======================== 댓글 CRUD ======================== -->
+    
+    <!-- 댓글 등록 -->
+    <insert id="insertComment" parameterType="com.ssafy.trip.model.dto.PlanBoardComment" useGeneratedKeys="true" keyProperty="commentId">
+        INSERT INTO plan_board_comment (pboard_no, user_id, writer, content, parent_comment_id)
+        VALUES (#{pboardNo}, #{userId}, #{writer}, #{content}, #{parentCommentId})
+    </insert>
+    
+    <!-- 게시글별 댓글 목록 조회 -->
+    <select id="selectCommentsByPboardNo" resultMap="planBoardCommentResultMap">
+        SELECT 
+            pbc.*,
+            (SELECT COUNT(*) FROM plan_board_comment 
+             WHERE parent_comment_id = pbc.comment_id AND is_deleted = FALSE) as reply_count
+        FROM plan_board_comment pbc
+        WHERE pbc.pboard_no = #{pboardNo} AND pbc.parent_comment_id IS NULL AND pbc.is_deleted = FALSE
+        ORDER BY pbc.reg_date ASC
+    </select>
+    
+    <!-- 댓글 수정 -->
+    <update id="updateComment" parameterType="com.ssafy.trip.model.dto.PlanBoardComment">
+        UPDATE plan_board_comment SET
+            content = #{content},
+            update_date = CURRENT_TIMESTAMP
+        WHERE comment_id = #{commentId}
+    </update>
+    
+    <!-- 댓글 삭제 (soft delete) -->
+    <update id="deleteComment">
+        UPDATE plan_board_comment SET
+            is_deleted = TRUE,
+            update_date = CURRENT_TIMESTAMP
+        WHERE comment_id = #{commentId}
+    </update>
+    
+    <!-- 대댓글 목록 조회 -->
+    <select id="selectRepliesByParentId" resultMap="planBoardCommentResultMap">
+        SELECT * FROM plan_board_comment
+        WHERE parent_comment_id = #{parentCommentId} AND is_deleted = FALSE
+        ORDER BY reg_date ASC
+    </select>
+
+    <!-- ======================== 좋아요 관리 ======================== -->
+    
+    <!-- 좋아요 추가 -->
+    <insert id="insertLike" parameterType="com.ssafy.trip.model.dto.PlanBoardLike">
+        INSERT INTO plan_board_like (pboard_no, user_id) VALUES (#{pboardNo}, #{userId})
+    </insert>
+    
+    <!-- 좋아요 삭제 -->
+    <delete id="deleteLike">
+        DELETE FROM plan_board_like WHERE pboard_no = #{pboardNo} AND user_id = #{userId}
+    </delete>
+    
+    <!-- 좋아요 여부 확인 -->
+    <select id="isLikedByUser" resultType="boolean">
+        <![CDATA[
+        SELECT COUNT(*) > 0 FROM plan_board_like 
+        WHERE pboard_no = #{pboardNo} AND user_id = #{userId}
+        ]]>
+    </select>
+    
+    <!-- 게시글별 좋아요 목록 조회 -->
+    <select id="selectLikesByPboardNo" resultMap="planBoardLikeResultMap">
+        SELECT * FROM plan_board_like WHERE pboard_no = #{pboardNo} ORDER BY created_at DESC
+    </select>
+
+    <!-- ======================== 태그 관리 ======================== -->
+    
+    <!-- 태그 등록 -->
+    <insert id="insertTag" parameterType="com.ssafy.trip.model.dto.PlanBoardTag" useGeneratedKeys="true" keyProperty="tagId">
+        INSERT INTO plan_board_tag (tag_name) VALUES (#{tagName})
+    </insert>
+    
+    <!-- 태그명으로 태그 조회 -->
+    <select id="selectTagByName" resultMap="planBoardTagResultMap">
+        SELECT * FROM plan_board_tag WHERE tag_name = #{tagName}
+    </select>
+    
+    <!-- 인기 태그 목록 조회 -->
+    <select id="selectPopularTags" resultMap="planBoardTagResultMap">
+        SELECT * FROM plan_board_tag ORDER BY use_count DESC LIMIT #{limit}
+    </select>
+    
+    <!-- 게시글-태그 연결 -->
+    <insert id="insertTagRelation" parameterType="com.ssafy.trip.model.dto.PlanBoardTagRelation">
+        INSERT INTO plan_board_tag_relation (pboard_no, tag_id) VALUES (#{pboardNo}, #{tagId})
+    </insert>
+    
+    <!-- 게시글-태그 연결 해제 -->
+    <delete id="deleteTagRelation">
+        DELETE FROM plan_board_tag_relation WHERE pboard_no = #{pboardNo} AND tag_id = #{tagId}
+    </delete>
+    
+    <!-- 게시글의 모든 태그 연결 해제 -->
+    <delete id="deleteAllTagRelations">
+        DELETE FROM plan_board_tag_relation WHERE pboard_no = #{pboardNo}
+    </delete>
+    
+    <!-- 게시글별 태그 목록 조회 -->
+    <select id="selectTagsByPboardNo" resultMap="planBoardTagResultMap">
+        SELECT pbt.* FROM plan_board_tag pbt
+        JOIN plan_board_tag_relation pbtr ON pbt.tag_id = pbtr.tag_id
+        WHERE pbtr.pboard_no = #{pboardNo}
+        ORDER BY pbt.tag_name
+    </select>
+    
+    <!-- 태그별 게시글 목록 조회 -->
+    <select id="selectPlanBoardsByTag" resultMap="planBoardSummaryResultMap">
+        SELECT 
+            pb.pboard_no, pb.title, pb.writer, pb.user_id, pb.reg_date, pb.view_cnt, 
+            pb.like_count, pb.comment_count, pb.travel_title, pb.start_date, pb.end_date,
+            pb.travel_destinations, pb.travel_theme, pb.estimated_budget, pb.participant_count,
+            pb.travel_duration, pb.thumbnail_image, pb.is_featured,
+            FALSE as is_liked,
+            GROUP_CONCAT(pbt2.tag_name ORDER BY pbt2.tag_name SEPARATOR ',') as tag_names
+        FROM plan_board pb
+        JOIN plan_board_tag_relation pbtr ON pb.pboard_no = pbtr.pboard_no
+        JOIN plan_board_tag pbt ON pbtr.tag_id = pbt.tag_id
+        LEFT JOIN plan_board_tag_relation pbtr2 ON pb.pboard_no = pbtr2.pboard_no
+        LEFT JOIN plan_board_tag pbt2 ON pbtr2.tag_id = pbt2.tag_id
+        WHERE pbt.tag_name = #{tagName} AND pb.is_public = TRUE
+        GROUP BY pb.pboard_no
+        ORDER BY pb.reg_date DESC
+        LIMIT #{offset}, #{limit}
+    </select>
+
+    <!-- ======================== 통계 및 기타 ======================== -->
+    
+    <!-- 여행 테마별 통계 -->
+    <select id="selectTravelThemeStatistics" resultType="java.util.HashMap">
+        SELECT 
+            travel_theme as theme,
+            COUNT(*) as count,
+            AVG(estimated_budget) as avgBudget,
+            AVG(travel_duration) as avgDuration
+        FROM plan_board 
+        WHERE travel_theme IS NOT NULL AND is_public = TRUE
+        GROUP BY travel_theme
+        ORDER BY count DESC
+    </select>
+    
+    <!-- 월별 게시글 통계 -->
+    <select id="selectMonthlyStatistics" resultType="java.util.HashMap">
+        SELECT 
+            MONTH(reg_date) as month,
+            COUNT(*) as count,
+            AVG(view_cnt) as avgViews,
+            AVG(like_count) as avgLikes
+        FROM plan_board 
+        WHERE YEAR(reg_date) = #{year} AND is_public = TRUE
+        GROUP BY MONTH(reg_date)
+        ORDER BY month
+    </select>
+    
+    <!-- 전체 게시글 수 조회 -->
+    <select id="getTotalPlanBoardCountAll" resultType="int">
+        SELECT COUNT(*) FROM plan_board WHERE is_public = TRUE
+    </select>
+    
+    <!-- 게시글 검색 -->
+    <select id="searchPlanBoards" resultMap="planBoardSummaryResultMap">
+        SELECT 
+            pb.pboard_no, pb.title, pb.writer, pb.user_id, pb.reg_date, pb.view_cnt, 
+            pb.like_count, pb.comment_count, pb.travel_title, pb.start_date, pb.end_date,
+            pb.travel_destinations, pb.travel_theme, pb.estimated_budget, pb.participant_count,
+            pb.travel_duration, pb.thumbnail_image, pb.is_featured,
+            FALSE as is_liked,
+            GROUP_CONCAT(pbt.tag_name ORDER BY pbt.tag_name SEPARATOR ',') as tag_names
+        FROM plan_board pb
+        LEFT JOIN plan_board_tag_relation pbtr ON pb.pboard_no = pbtr.pboard_no
+        LEFT JOIN plan_board_tag pbt ON pbtr.tag_id = pbt.tag_id
+        WHERE pb.is_public = TRUE
+        <choose>
+            <when test="searchType == 'title'">
+                AND pb.title LIKE CONCAT('%', #{keyword}, '%')
+            </when>
+            <when test="searchType == 'content'">
+                AND pb.content LIKE CONCAT('%', #{keyword}, '%')
+            </when>
+            <when test="searchType == 'writer'">
+                AND pb.writer LIKE CONCAT('%', #{keyword}, '%')
+            </when>
+            <when test="searchType == 'destination'">
+                AND pb.travel_destinations LIKE CONCAT('%', #{keyword}, '%')
+            </when>
+            <otherwise>
+                AND (pb.title LIKE CONCAT('%', #{keyword}, '%') 
+                     OR pb.content LIKE CONCAT('%', #{keyword}, '%') 
+                     OR pb.writer LIKE CONCAT('%', #{keyword}, '%')
+                     OR pb.travel_destinations LIKE CONCAT('%', #{keyword}, '%'))
+            </otherwise>
+        </choose>
+        GROUP BY pb.pboard_no
+        ORDER BY pb.reg_date DESC
+        LIMIT #{offset}, #{limit}
+    </select>
+    
+    <!-- 검색 결과 수 조회 -->
+    <select id="getSearchResultCount" resultType="int">
+        SELECT COUNT(DISTINCT pb.pboard_no)
+        FROM plan_board pb
+        WHERE pb.is_public = TRUE
+        <choose>
+            <when test="searchType == 'title'">
+                AND pb.title LIKE CONCAT('%', #{keyword}, '%')
+            </when>
+            <when test="searchType == 'content'">
+                AND pb.content LIKE CONCAT('%', #{keyword}, '%')
+            </when>
+            <when test="searchType == 'writer'">
+                AND pb.writer LIKE CONCAT('%', #{keyword}, '%')
+            </when>
+            <when test="searchType == 'destination'">
+                AND pb.travel_destinations LIKE CONCAT('%', #{keyword}, '%')
+            </when>
+            <otherwise>
+                AND (pb.title LIKE CONCAT('%', #{keyword}, '%') 
+                     OR pb.content LIKE CONCAT('%', #{keyword}, '%') 
+                     OR pb.writer LIKE CONCAT('%', #{keyword}, '%')
+                     OR pb.travel_destinations LIKE CONCAT('%', #{keyword}, '%'))
+            </otherwise>
+        </choose>
+    </select>
+
+</mapper>

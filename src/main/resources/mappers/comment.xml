@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  
+<mapper namespace="com.ssafy.trip.model.dao.CommentDao">
+    
+    <!-- ResultMap 정의 -->
+    <resultMap id="commentResultMap" type="com.ssafy.trip.model.dto.Comment">
+        <id property="commentId" column="comment_id" />
+        <result property="contentId" column="content_id" />
+        <result property="contentType" column="content_type" />
+        <result property="content" column="content" />
+        <result property="writer" column="writer" />
+        <result property="regDate" column="reg_date" />
+        <result property="parentId" column="parent_id" />
+        <result property="depth" column="depth" />
+    </resultMap>
+    
+    <!-- 댓글 등록 -->
+    <insert id="insert" parameterType="com.ssafy.trip.model.dto.Comment" useGeneratedKeys="true" keyProperty="commentId">
+        INSERT INTO comment (content_id, content_type, content, writer, reg_date, parent_id, depth)
+        VALUES (#{contentId}, #{contentType}, #{content}, #{writer}, NOW(), #{parentId}, #{depth})
+    </insert>
+    
+    <!-- 게시글별 댓글 조회 -->
+    <select id="getCommentsByBoard" resultMap="commentResultMap">
+        SELECT comment_id, content_id, content_type, content, writer, reg_date, parent_id, depth
+        FROM comment 
+        WHERE content_id = #{contentId} AND content_type = 'board'
+        ORDER BY 
+            CASE WHEN parent_id IS NULL THEN comment_id ELSE parent_id END,
+            CASE WHEN parent_id IS NULL THEN 0 ELSE 1 END,
+            comment_id
+    </select>
+    
+    <!-- 댓글 ID로 조회 -->
+    <select id="selectById" resultMap="commentResultMap">
+        SELECT comment_id, content_id, content_type, content, writer, reg_date, parent_id, depth
+        FROM comment 
+        WHERE comment_id = #{commentId}
+    </select>
+    
+    <!-- 댓글 수정 -->
+    <update id="update" parameterType="com.ssafy.trip.model.dto.Comment">
+        UPDATE comment 
+        SET content = #{content}
+        WHERE comment_id = #{commentId}
+    </update>
+    
+    <!-- 댓글 삭제 -->
+    <delete id="delete">
+        DELETE FROM comment 
+        WHERE comment_id = #{commentId}
+    </delete>
+    
+    <!-- 자식 댓글 조회 -->
+    <select id="getChildComments" resultMap="commentResultMap">
+        SELECT comment_id, content_id, content_type, content, writer, reg_date, parent_id, depth
+        FROM comment 
+        WHERE parent_id = #{parentId}
+        ORDER BY comment_id
+    </select>
+    
+    <!-- 댓글 수 조회 -->
+    <select id="getCommentCount" resultType="int">
+        SELECT COUNT(*) 
+        FROM comment 
+        WHERE content_id = #{contentId} AND content_type = #{contentType}
+    </select>
+    
+</mapper>
