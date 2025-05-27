@@ -57,6 +57,7 @@ public class PlanBoardRestController {
             @Parameter(description = "정렬 기준 (latest, popular, likes)") @RequestParam(defaultValue = "latest") String sortBy,
             @Parameter(description = "추천 게시글만 보기") @RequestParam(defaultValue = "false") boolean onlyFeatured,
             @Parameter(description = "태그명") @RequestParam(required = false) String tagName,
+            @Parameter(description = "내 게시글만 보기") @RequestParam(defaultValue = "false") boolean onlyMyPosts,
             Authentication authentication) {
         try {
             // 검색 조건 생성
@@ -66,11 +67,22 @@ public class PlanBoardRestController {
             condition.setSortBy(sortBy);
             condition.setOnlyFeatured(onlyFeatured);
             condition.setTagName(tagName);
+            condition.setOnlyMyPosts(onlyMyPosts);
             
             // 현재 사용자 ID 설정 (좋아요 표시 여부 확인용)
             if (authentication != null && authentication.isAuthenticated()) {
                 String userId = authentication.getName();
                 condition.setUserId(userId);
+                
+                // 내 게시글만 보기 요청 시 권한 확인
+                if (onlyMyPosts && userId == null) {
+                    return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body(Map.of("message", "로그인이 필요합니다."));
+                }
+            } else if (onlyMyPosts) {
+                // 로그인하지 않은 상태에서 내 게시글만 보기 요청 시
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("message", "로그인이 필요합니다."));
             }
             
             // 게시글 목록 조회

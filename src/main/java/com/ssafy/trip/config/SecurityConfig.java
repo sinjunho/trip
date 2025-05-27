@@ -84,7 +84,11 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.POST, "/api/notices/**").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.PUT, "/api/notices/**").hasRole("ADMIN") 
                 .requestMatchers(HttpMethod.DELETE, "/api/notices/**").hasRole("ADMIN")
-                
+             // 여행계획 공유
+                .requestMatchers(HttpMethod.GET, "/api/planboards/**").permitAll()
+                .requestMatchers(HttpMethod.POST, "/api/planboards/**").authenticated()
+                .requestMatchers(HttpMethod.PUT, "/api/planboards/**").authenticated()
+                .requestMatchers(HttpMethod.DELETE, "/api/planboards/**").authenticated()
                 .anyRequest().authenticated()
                 
             )

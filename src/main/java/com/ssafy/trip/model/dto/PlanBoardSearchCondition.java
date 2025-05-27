@@ -30,17 +30,28 @@ public class PlanBoardSearchCondition extends SearchCondition {
     private String sortBy; // 정렬 기준 (latest, popular, likes)
     private boolean onlyFeatured; // 추천 게시글만 보기
     private String tagName; // 태그별 검색
+    private boolean onlyMyPosts; // 내 게시글만 보기 - 추가
     
     // 생성자 - 기본 검색
     public PlanBoardSearchCondition(String key, String word, int currentPage) {
         super(key, word, currentPage);
         this.sortBy = "latest"; // 기본값: 최신순
+        this.onlyMyPosts = false; // 기본값: 전체 보기
     }
     
     // 생성자 - 테마별 검색
     public PlanBoardSearchCondition(String travelTheme, int currentPage) {
         super(null, null, currentPage);
         this.travelTheme = travelTheme;
+        this.sortBy = "latest";
+        this.onlyMyPosts = false;
+    }
+    
+    // 생성자 - 내 게시글 검색
+    public PlanBoardSearchCondition(String userId, boolean onlyMyPosts, int currentPage) {
+        super(null, null, currentPage);
+        this.userId = userId;
+        this.onlyMyPosts = onlyMyPosts;
         this.sortBy = "latest";
     }
 }

@@ -38,6 +38,7 @@ public class PlanBoardSummary {
     private String thumbnailImage;
     private boolean isFeatured;
     private boolean isLiked; // 현재 사용자의 좋아요 여부
+    private boolean isPublic; // 공개 여부 - 추가
     
     // 태그 목록 (문자열로 연결)
     private String tagNames; // "제주도,힐링,혼자여행" 형태
