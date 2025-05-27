@@ -1,0 +1,71 @@
+@startuml
+' ====== 스타일 커스텀 ======
+skinparam rectangle {
+    BackgroundColor #f8fafc
+    BorderColor #dbeafe
+    FontColor #172554
+    FontSize 18
+    FontStyle bold
+}
+skinparam actor {
+    BorderColor #64748b
+    BackgroundColor #e0e7ef
+    FontColor #22223b
+    FontSize 16
+}
+skinparam usecase {
+    BorderColor #2563eb
+    BackgroundColor #f1f5f9
+    FontColor #0f172a
+    FontSize 15
+    BorderThickness 2
+    Shadowing true
+}
+skinparam ArrowColor #3b82f6
+skinparam ArrowFontColor #1e293b
+skinparam ArrowFontSize 13
+skinparam backgroundColor #fff
+
+title <b><size:20>Mr. Route 시스템 주요 유스케이스 다이어그램</size></b>
+left to right direction
+
+' ====== 액터 정의 ======
+actor "일반 회원" as User
+actor "관리자" as Admin
+actor "AI 챗봇" as Chatbot
+
+' ====== 시스템 영역 ======
+rectangle "<b>여행 플랫폼 시스템</b>" as SYS {
+
+  (여행지 검색/상세조회) as UC1
+  (여행 일정 작성/수정/삭제) as UC2
+  (게시판 글 작성/수정/삭제) as UC3
+  (댓글 작성/수정/삭제) as UC4
+  (회원 가입/로그인/정보수정) as UC5
+  (AI 여행 챗봇 대화) as UC6
+  (통계 및 인기 여행지 조회) as UC7
+  (공지사항 조회) as UC8
+  (관리자 회원/게시글 관리) as UC9
+}
+
+' ====== 액터-유스케이스 연결 ======
+User --> UC1
+User --> UC2
+User --> UC3
+User --> UC4
+User --> UC5
+User --> UC6
+User --> UC7
+User --> UC8
+
+Admin --> UC9
+Admin --> UC8
+Admin --> UC7
+
+Chatbot --> UC6
+
+' ====== 관계 ======
+UC3 ..> UC4 : <<include>>
+UC2 ..> UC1 : <<include>>
+
+@enduml

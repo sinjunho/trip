@@ -1,0 +1,148 @@
+@startuml
+!theme toy
+skinparam backgroundColor #f8f9fa
+skinparam actor {
+    BackgroundColor #4a90e2
+    BorderColor #2c5aa0
+    FontSize 12
+    FontStyle bold
+}
+skinparam usecase {
+    BackgroundColor #ffffff
+    BorderColor #2c5aa0
+    FontSize 11
+    ArrowColor #2c5aa0
+}
+skinparam package {
+    BackgroundColor #e8f4fd
+    BorderColor #4a90e2
+    FontSize 12
+    FontStyle bold
+}
+skinparam rectangle {
+    BackgroundColor #ffffff
+    BorderColor #4a90e2
+    FontSize 14
+    FontStyle bold
+}
+
+title <size:18><b>🏖️ 여행 관리 시스템 (핵심 기능) ✈️</b></size>
+
+left to right direction
+
+actor "👤\n사용자" as User #lightblue
+actor "👨‍💼\n관리자" as Admin #lightcoral
+actor "🤖\nAI 챗봇" as AISystem #lightgreen
+
+rectangle "🌍 여행 관리 시스템" #aliceblue {
+
+  package "👥 회원 관리" #lavender {
+    usecase "📝 회원가입" as UC1 #white
+    usecase "🔐 로그인" as UC2 #white
+    usecase "👁️ 프로필 조회" as UC3 #white
+    usecase "✏️ 프로필 수정" as UC4 #white
+  }
+
+  package "🏞️ 관광지 서비스" #mistyrose {
+    usecase "🔍 관광지 검색" as UC5 #white
+    usecase "📍 상세정보 조회" as UC6 #white
+    usecase "⭐ 인기 관광지" as UC7 #white
+    usecase "🎯 맞춤 추천" as UC8 #white
+  }
+
+  package "📅 여행 계획" #honeydew {
+    usecase "✨ 계획 생성" as UC9 #white
+    usecase "📋 내 계획 관리" as UC10 #white
+    usecase "📖 계획 상세보기" as UC11 #white
+    usecase "🔄 계획 수정" as UC12 #white
+  }
+
+  package "💬 계획 공유" #lightcyan {
+    usecase "📤 계획 공유하기" as UC13 #white
+    usecase "📜 공유 게시판" as UC14 #white
+    usecase "❤️ 좋아요" as UC15 #white
+    usecase "💭 댓글 작성" as UC16 #white
+    usecase "🔍 계획 검색" as UC17 #white
+  }
+
+  package "🤖 AI 서비스" #lightsteelblue {
+    usecase "💬 여행 상담" as UC18 #white
+    usecase "🎯 여행지 추천" as UC19 #white
+    usecase "📝 일정 조언" as UC20 #white
+    usecase "🍽️ 맛집 추천" as UC21 #white
+  }
+
+  package "⚙️ 시스템 관리" #lightgray {
+    usecase "👥 회원 관리" as UC22 #white
+    usecase "📋 게시글 관리" as UC23 #white
+    usecase "📊 통계 조회" as UC24 #white
+    usecase "📢 공지사항" as UC25 #white
+  }
+}
+
+' 사용자 연결
+User -[#4a90e2]-> UC1
+User -[#4a90e2]-> UC2
+User -[#4a90e2]-> UC3
+User -[#4a90e2]-> UC4
+
+User -[#4a90e2]-> UC5
+User -[#4a90e2]-> UC6
+User -[#4a90e2]-> UC7
+User -[#4a90e2]-> UC8
+
+User -[#4a90e2]-> UC9
+User -[#4a90e2]-> UC10
+User -[#4a90e2]-> UC11
+User -[#4a90e2]-> UC12
+
+User -[#4a90e2]-> UC13
+User -[#4a90e2]-> UC14
+User -[#4a90e2]-> UC15
+User -[#4a90e2]-> UC16
+User -[#4a90e2]-> UC17
+
+User -[#4a90e2]-> UC18
+User -[#4a90e2]-> UC19
+User -[#4a90e2]-> UC20
+User -[#4a90e2]-> UC21
+
+' 관리자 연결
+Admin -[#dc3545]-> UC2
+Admin -[#dc3545]-> UC22
+Admin -[#dc3545]-> UC23
+Admin -[#dc3545]-> UC24
+Admin -[#dc3545]-> UC25
+
+' AI 시스템 연결
+AISystem -[#28a745]-> UC18
+AISystem -[#28a745]-> UC19
+AISystem -[#28a745]-> UC20
+AISystem -[#28a745]-> UC21
+
+' 포함 관계
+UC9 .[#ff8c00].> UC2 : <<include>>
+UC12 .[#ff8c00].> UC2 : <<include>>
+UC13 .[#ff8c00].> UC2 : <<include>>
+UC15 .[#ff8c00].> UC2 : <<include>>
+UC16 .[#ff8c00].> UC2 : <<include>>
+
+' 확장 관계
+UC8 .[#9932cc].> UC5 : <<extend>>
+UC17 .[#9932cc].> UC14 : <<extend>>
+
+legend top right
+|= 범례 |= 설명 |
+| 👤 사용자 | 여행 계획 및 정보 이용 |
+| 👨‍💼 관리자 | 시스템 관리 및 운영 |
+| 🤖 AI 챗봇 | 개인맞춤 추천 서비스 |
+endlegend
+
+note bottom
+<b>🎯 핵심 가치</b>
+• AI 기반 개인맞춤 여행 추천
+• 간편한 여행 계획 수립 및 공유
+• 커뮤니티 기반 여행 정보 교류
+end note
+
+@enduml

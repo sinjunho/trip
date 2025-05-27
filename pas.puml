@@ -1,0 +1,198 @@
+@startuml
+!theme toy
+skinparam class {
+    BackgroundColor lightblue
+    BorderColor darkblue
+    FontSize 11
+}
+skinparam interface {
+    BackgroundColor lightgreen
+    BorderColor darkgreen
+    FontSize 11
+}
+
+title <size:16><b>🏖️ 여행 관리 시스템 핵심 클래스 다이어그램 ✈️</b></size>
+
+package "🎮 Controller Layer" {
+    class MemberRestController {
+        + register(Member)
+        + login(Map<String,String>)
+        + updateMember(String,Member)
+        + deleteMember(String)
+    }
+
+    class AttractionRestController {
+        + searchAttractionsByKeyword()
+        + getAttraction(int)
+        + getRandomAttractions(int)
+        + getRankAttractions()
+    }
+
+    class TravelPlanRestController {
+        + createPlan(TravelPlan)
+        + getUserPlans()
+        + getPlanDetail(int)
+        + updatePlan(int,TravelPlan)
+    }
+
+    class PlanBoardRestController {
+        + createPlanBoard(PlanBoard)
+        + getPlanBoardList()
+        + toggleLike(int)
+        + createComment()
+    }
+
+    class ChatbotController {
+        + sendMessage(Map<String,String>)
+    }
+}
+
+package "🔧 Service Layer" {
+    interface MemberService {
+        + registMember(Member)
+        + login(String,String)
+        + modifyMember()
+    }
+
+    interface AttractionService {
+        + searchAttractionsByTitle()
+        + getAttractionByNo(int)
+        + getRandomAttractions(int)
+        + getRank()
+    }
+
+    interface TravelPlanService {
+        + createPlan(TravelPlan)
+        + getPlansByUserId(String)
+        + updatePlan(TravelPlan)
+    }
+
+    interface PlanBoardService {
+        + createPlanBoard(PlanBoard)
+        + getPlanBoardList()
+        + toggleLike(int,String)
+        + createComment()
+    }
+
+    class ChatbotService {
+        - String apiKey
+        - WebClient webClient
+        + generateResponse(String)
+        + generateAttractionRecommendation(String)
+        + generateTravelPlanAdvice()
+        + generateFoodRecommendation()
+    }
+
+    class BasicAttractionService {
+        + searchAttractionsByTitle()
+        + calculateDistanceByHaversine()
+        + heapSort()
+        + CountingSort()
+    }
+}
+
+package "🗃️ Data Layer" {
+    interface MemberDao {
+        + insert(Member)
+        + login(String,String)
+        + modify()
+        + delete()
+    }
+
+    interface AttractionDao {
+        + searchAttractionsByTitle()
+        + getAttractionByNo(int)
+        + getRandomAttractions(int)
+        + updateViewCount(int)
+    }
+
+    interface TravelPlanDao {
+        + insertPlan(TravelPlan)
+        + getPlansByUserId(String)
+        + updatePlan(TravelPlan)
+        + deletePlan(int)
+    }
+
+    interface PlanBoardDao {
+        + insertPlanBoard(PlanBoard)
+        + selectPlanBoardList()
+        + insertLike()
+        + insertComment()
+    }
+}
+
+package "📋 Model/DTO" {
+    class Member {
+        - String id
+        - String password
+        - String name
+        - String role
+    }
+
+    class Attraction {
+        - int no
+        - String title
+        - String sido
+        - String gugun
+        - float latitude
+        - float longitude
+        - int viewCnt
+    }
+
+    class TravelPlan {
+        - int planId
+        - String userId
+        - String title
+        - LocalDate startDate
+        - LocalDate endDate
+        - List<PlanDetail> details
+    }
+
+    class PlanBoard {
+        - int pboardNo
+        - String title
+        - String content
+        - String userId
+        - String travelTheme
+        - Integer estimatedBudget
+        - int likeCount
+        - int commentCount
+    }
+}
+
+package "🔐 Security" {
+    class JwtTokenProvider {
+        + createToken(String,String)
+        + validateToken(String)
+    }
+
+    class SecurityConfig {
+        + passwordEncoder()
+        + filterChain(HttpSecurity)
+    }
+}
+
+' Controller -> Service 관계
+MemberRestController --> MemberService
+AttractionRestController --> AttractionService
+TravelPlanRestController --> TravelPlanService
+PlanBoardRestController --> PlanBoardService
+ChatbotController --> ChatbotService
+
+' Service -> DAO 관계
+MemberService --> MemberDao
+AttractionService --> AttractionDao
+TravelPlanService --> TravelPlanDao
+PlanBoardService --> PlanBoardDao
+
+' Service 구현체
+AttractionService <|.. BasicAttractionService
+
+' DTO 관계
+TravelPlan --> PlanDetail : contains
+
+' Security 관계
+MemberRestController --> JwtTokenProvider
+SecurityConfig --> JwtTokenProvider
+
+@enduml
