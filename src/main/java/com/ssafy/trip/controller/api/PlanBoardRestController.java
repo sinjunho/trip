@@ -151,7 +151,7 @@ public class PlanBoardRestController {
             if (authentication == null || !authentication.isAuthenticated()) {
                 log.warn("인증되지 않은 사용자의 게시글 작성 시도");
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                		.body(Map.of("message", "게시글을 작성하려면 로그인이 필요합니다."));
+                        .body(Map.of("message", "게시글을 작성하려면 로그인이 필요합니다."));
             }
             
             // 사용자 정보 가져오기
@@ -166,6 +166,13 @@ public class PlanBoardRestController {
             // 작성자 정보 설정
             planBoard.setUserId(member.getId());
             planBoard.setWriter(member.getName());
+            
+            // 🔥 isPublic 값 확인 및 기본값 설정
+            if (planBoard.getIsPublic() == null) {
+                planBoard.setIsPublic(true); // 기본값: 공개
+            }
+            
+            log.debug("게시글 작성 - isPublic 값: {}", planBoard.getIsPublic());
             
             // 게시글 등록
             int result = planBoardService.createPlanBoard(planBoard);

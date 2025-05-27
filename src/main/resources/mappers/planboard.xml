@@ -90,18 +90,21 @@
 
     <!-- ======================== 게시글 CRUD ======================== -->
     
-    <!-- 게시글 등록 -->
-    <insert id="insertPlanBoard" parameterType="com.ssafy.trip.model.dto.PlanBoard" useGeneratedKeys="true" keyProperty="pboardNo">
-        INSERT INTO plan_board (
-            title, content, writer, user_id, plan_id, travel_title, start_date, end_date,
-            travel_destinations, travel_theme, estimated_budget, participant_count, travel_duration,
-            is_public, is_featured, thumbnail_image, attachment_files
-        ) VALUES (
-            #{title}, #{content}, #{writer}, #{userId}, #{planId}, #{travelTitle}, #{startDate}, #{endDate},
-            #{travelDestinations}, #{travelTheme}, #{estimatedBudget}, #{participantCount}, #{travelDuration},
-            #{isPublic}, #{isFeatured}, #{thumbnailImage}, #{attachmentFiles}
-        )
-    </insert>
+   <!-- 기존 insertPlanBoard 쿼리 수정 -->
+<insert id="insertPlanBoard" parameterType="com.ssafy.trip.model.dto.PlanBoard" useGeneratedKeys="true" keyProperty="pboardNo">
+    INSERT INTO plan_board (
+        title, content, writer, user_id, plan_id, travel_title, start_date, end_date,
+        travel_destinations, travel_theme, estimated_budget, participant_count, travel_duration,
+        is_public, is_featured, thumbnail_image, attachment_files
+    ) VALUES (
+        #{title}, #{content}, #{writer}, #{userId}, #{planId}, #{travelTitle}, #{startDate}, #{endDate},
+        #{travelDestinations}, #{travelTheme}, #{estimatedBudget}, #{participantCount}, #{travelDuration},
+        <!-- 🔥 Boolean을 정수로 명시적 변환 -->
+        CASE WHEN #{isPublic} = true THEN 1 ELSE 0 END, 
+        CASE WHEN #{isFeatured} = true THEN 1 ELSE 0 END, 
+        #{thumbnailImage}, #{attachmentFiles}
+    )
+</insert>
     
    <!-- 게시글 목록 조회 (요약 정보) - 수정된 버전 -->
 <select id="selectPlanBoardList" parameterType="com.ssafy.trip.model.dto.PlanBoardSearchCondition" resultMap="planBoardSummaryResultMap">
@@ -210,26 +213,27 @@
         SELECT * FROM plan_board WHERE pboard_no = #{pboardNo}
     </select>
     
-    <!-- 게시글 수정 -->
-    <update id="updatePlanBoard" parameterType="com.ssafy.trip.model.dto.PlanBoard">
-        UPDATE plan_board SET
-            title = #{title},
-            content = #{content},
-            travel_title = #{travelTitle},
-            start_date = #{startDate},
-            end_date = #{endDate},
-            travel_destinations = #{travelDestinations},
-            travel_theme = #{travelTheme},
-            estimated_budget = #{estimatedBudget},
-            participant_count = #{participantCount},
-            travel_duration = #{travelDuration},
-            is_public = #{isPublic},
-            is_featured = #{isFeatured},
-            thumbnail_image = #{thumbnailImage},
-            attachment_files = #{attachmentFiles},
-            update_date = CURRENT_TIMESTAMP
-        WHERE pboard_no = #{pboardNo}
-    </update>
+<!-- updatePlanBoard 쿼리도 동일하게 수정 -->
+<update id="updatePlanBoard" parameterType="com.ssafy.trip.model.dto.PlanBoard">
+    UPDATE plan_board SET
+        title = #{title},
+        content = #{content},
+        travel_title = #{travelTitle},
+        start_date = #{startDate},
+        end_date = #{endDate},
+        travel_destinations = #{travelDestinations},
+        travel_theme = #{travelTheme},
+        estimated_budget = #{estimatedBudget},
+        participant_count = #{participantCount},
+        travel_duration = #{travelDuration},
+        <!-- 🔥 Boolean을 정수로 명시적 변환 -->
+        is_public = CASE WHEN #{isPublic} = true THEN 1 ELSE 0 END,
+        is_featured = CASE WHEN #{isFeatured} = true THEN 1 ELSE 0 END,
+        thumbnail_image = #{thumbnailImage},
+        attachment_files = #{attachmentFiles},
+        update_date = CURRENT_TIMESTAMP
+    WHERE pboard_no = #{pboardNo}
+</update>
     
     <!-- 게시글 삭제 -->
     <delete id="deletePlanBoard">

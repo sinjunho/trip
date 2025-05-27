@@ -4,6 +4,8 @@ import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -36,7 +38,7 @@ public class PlanBoard {
     private Integer travelDuration;
     
     // 게시판 기능
-    private boolean isPublic;
+
     private boolean isFeatured;
     private int likeCount;
     private int commentCount;
@@ -74,6 +76,22 @@ public class PlanBoard {
         // 여행 일수 자동 계산
         if (startDate != null && endDate != null) {
             this.travelDuration = (int) java.time.temporal.ChronoUnit.DAYS.between(startDate, endDate) + 1;
+        }
+    }
+    
+    @JsonProperty("isPublic")
+    private Boolean isPublic; // Boolean 타입으로 변경하여 null 처리 가능
+
+    // 또는 커스텀 setter 추가
+    public void setIsPublic(Object isPublic) {
+        if (isPublic instanceof Boolean) {
+            this.isPublic = (Boolean) isPublic;
+        } else if (isPublic instanceof String) {
+            this.isPublic = "true".equalsIgnoreCase((String) isPublic) || "1".equals(isPublic);
+        } else if (isPublic instanceof Number) {
+            this.isPublic = ((Number) isPublic).intValue() == 1;
+        } else {
+            this.isPublic = true; // 기본값
         }
     }
 }
